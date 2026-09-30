@@ -2,8 +2,8 @@
   "name": "Чарник — Тёмное фэнтези",
   "short_name": "Чарник",
   "description": "Интерактивный лист персонажа для тёмного фэнтези",
-"start_url": "./charnik/",
-"scope": "./charnik/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0c18",
@@ -21,12 +21,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }
