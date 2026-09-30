@@ -1,11 +1,10 @@
 const CACHE_NAME = 'charnik-v1';
 const ASSETS = [
-  './charnik/',
-  './charnik/index.html',
-  './charnik/manifest.json',
-  './charnik/icon-192.png',
-  './charnik/icon-512.png',
-  './charnik/icon-512-maskable.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192x192.png',
+  './icon-512x512.png'
 ];
 
 // Установка — кэшируем всё
