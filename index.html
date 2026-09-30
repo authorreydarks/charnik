@@ -1,0 +1,2632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Лист персонажа — Тёмное фэнтези</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#131830">
+<meta name="description" content="Интерактивный лист персонажа для тёмного фэнтези">
+
+<!-- iOS-специфика -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Чарник">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-weight: 600;
+    color: #d8dcf0;
+    background-color: #0a0c18;
+    background-image:
+      radial-gradient(circle at 20% 25%, rgba(60, 80, 180, 0.18) 0%, transparent 45%),
+      radial-gradient(circle at 80% 75%, rgba(90, 50, 150, 0.22) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
+    line-height: 1.5;
+    font-size: 17px;
+    min-height: 100vh;
+    letter-spacing: 0.5px;
+  }
+
+  body { padding: 12px 8px 40px; }
+
+  .sheet {
+    max-width: 720px;
+    margin: 0 auto;
+    background-color: #131830;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(60, 90, 200, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(90, 50, 150, 0.18) 0%, transparent 60%);
+    padding: 20px 14px 30px;
+    border: 2px solid #2c3560;
+    outline: 1px solid #4a5798;
+    outline-offset: 3px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.85), inset 0 0 60px rgba(40, 60, 140, 0.2);
+    position: relative;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #c8d0f5;
+    text-shadow: 0 0 12px rgba(90, 120, 240, 0.55), 1px 1px 0 #1a1f3a;
+    margin: 0 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 2px double #3a4680;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 16px;
+    color: #7a85b8;
+    margin: 0 0 20px;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #a8b4e8;
+    margin: 22px 0 10px;
+    padding: 6px 0 6px 30px;
+    border-bottom: 1px solid #3a4680;
+    position: relative;
+    letter-spacing: 1px;
+  }
+  h2::before {
+    content: '✦';
+    position: absolute;
+    left: 4px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #6a7ad8;
+    text-shadow: 0 0 8px rgba(106, 122, 216, 0.6);
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 8px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: #cfd6ff;
+    background: linear-gradient(180deg, #1e2547, #141a33);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .menu-btn:hover { border-color: #4a5798; }
+  .menu-btn.active {
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    border-color: #6a7ad8;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(90, 120, 240, 0.45) inset, 0 0 10px rgba(90, 120, 240, 0.3);
+  }
+  .menu-btn .menu-ico {
+    font-size: 18px;
+    color: #8a9aea;
+    text-shadow: 0 0 8px rgba(106, 122, 216, 0.6);
+  }
+  .menu-btn.active .menu-ico { color: #c8b8f5; text-shadow: 0 0 10px rgba(160, 140, 245, 0.8); }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  label.fld {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7a85b8;
+    margin-bottom: 4px;
+  }
+  input[type="text"], input[type="number"], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 16px;
+    color: #e2e7ff;
+    background: rgba(20, 26, 51, 0.75);
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    outline: none;
+    -webkit-appearance: none;
+    letter-spacing: 0.5px;
+  }
+  input:focus, textarea:focus { border-color: #6a7ad8; background: #1a2142; }
+
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+
+  textarea { resize: none; overflow: hidden; line-height: 1.4; min-height: 44px; }
+
+  .counter-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(20, 26, 51, 0.65);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    padding: 6px;
+  }
+  .counter-stacked .counter-value {
+    width: 100%;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    background: rgba(20, 26, 51, 0.9);
+    color: #e2e7ff;
+    padding: 8px;
+  }
+  .counter-stacked .counter-buttons {
+    display: flex;
+    gap: 6px;
+  }
+  .counter-stacked .counter-buttons button {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 700;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    color: #d8dcf0;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .counter-stacked .counter-buttons button:active {
+    transform: translateY(1px);
+    filter: brightness(1.25);
+  }
+
+  .lvl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 26, 51, 0.65);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .lvl-row label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7a85b8;
+    white-space: nowrap;
+  }
+  .lvl-row input {
+    flex: 1;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #e2e7ff;
+    padding: 4px;
+    min-width: 0;
+  }
+
+  .stat {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    background: rgba(20, 26, 51, 0.6);
+    border: 1px solid #2c3560;
+    border-left: 4px solid #4a5798;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .stat-name {
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #a8b4e8;
+  }
+  .stat-max {
+    font-size: 11px;
+    color: #6a7ad8;
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .stat-controls {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .stat-controls button {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    font-family: inherit;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    color: #d8dcf0;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .stat-controls button:active { filter: brightness(1.25); }
+  .stat-controls input {
+    width: 60px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    background: rgba(20, 26, 51, 0.9);
+    color: #e2e7ff;
+  }
+
+  .big-counter {
+    background: rgba(20, 26, 51, 0.7);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+  }
+  .big-counter .label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #7a85b8;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .pool-row {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    background: rgba(20, 26, 51, 0.65);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .pool-row > button {
+    flex: 0 0 46px;
+    height: 46px;
+    font-size: 22px;
+    font-family: inherit;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    color: #d8dcf0;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .pool-row > button:active { transform: translateY(1px); filter: brightness(1.25); }
+  .pool-row .pool-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .pool-row .pool-input input {
+    width: 60px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #e2e7ff;
+    padding: 4px;
+    border-bottom: 2px solid #3a4680;
+  }
+  .pool-row .pool-input .sep {
+    color: #6a7ad8;
+    font-size: 20px;
+  }
+  .pool-row .pool-input .max-val {
+    min-width: 40px;
+    text-align: center;
+    color: #a8b4e8;
+  }
+  .bonus-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    min-width: 54px;
+    gap: 2px;
+  }
+  .bonus-box .bonus-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6a7ad8;
+  }
+  .bonus-box input {
+    width: 48px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid #2c3560;
+    border-radius: 4px;
+    background: rgba(20, 26, 51, 0.95);
+    color: #e2e7ff;
+    height: 26px;
+    padding: 0 2px;
+  }
+
+  .drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 32px;
+    font-size: 16px;
+    color: #6a7ad8;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    letter-spacing: -3px;
+    flex: 0 0 26px;
+    opacity: 0.75;
+    text-shadow: 0 0 6px rgba(106, 122, 216, 0.5);
+  }
+  .drag-handle:hover { opacity: 1; color: #a8b4e8; }
+  .drag-handle:active { cursor: grabbing; }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .name-row .name-field { flex: 1; min-width: 0; }
+  .name-row .rank-field {
+    flex: 0 0 80px;
+    min-width: 0;
+  }
+  .name-row .rank-field.hidden {
+    display: none;
+  }
+
+  .inv-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    background: rgba(20, 26, 51, 0.65);
+    border: 1px solid #2c3560;
+    border-left: 4px solid #4a5798;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .inv-item.dragging,
+  .skill-item.dragging,
+  .ability-item.dragging {
+    opacity: 0.4;
+  }
+  .inv-item.drop-before,
+  .skill-item.drop-before,
+  .ability-item.drop-before {
+    box-shadow: 0 -3px 0 0 #6a7ad8;
+  }
+  .inv-item.drop-after,
+  .skill-item.drop-after,
+  .ability-item.drop-after {
+    box-shadow: 0 3px 0 0 #6a7ad8;
+  }
+  .inv-row-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .inv-row-fields > .suffix-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .inv-row-fields > .suffix-wrap.hidden {
+    display: none;
+  }
+  .inv-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .inv-row-actions .spacer {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .inv-item .inv-field {
+    padding: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #e2e7ff;
+    background: rgba(20, 26, 51, 0.85);
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    outline: none;
+    width: 100%;
+  }
+  .inv-item .inv-name { font-weight: 700; }
+  .inv-desc {
+    margin-top: 2px;
+    display: none;
+  }
+  .inv-desc.open { display: block; }
+  .inv-desc textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    color: #e2e7ff;
+    background: rgba(20, 26, 51, 0.95);
+    border: 1px dashed #3a4680;
+    border-radius: 6px;
+    resize: none;
+    overflow: hidden;
+    min-height: 40px;
+    line-height: 1.4;
+  }
+  .inv-desc textarea:not([readonly]) {
+    border: 1px solid #6a7ad8;
+    background: #1a2142;
+    cursor: text;
+  }
+  .inv-desc textarea[readonly] {
+    cursor: pointer;
+    color: #c8d0f5;
+  }
+  .inv-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+  .inv-controls button {
+    width: 30px;
+    height: 34px;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 700;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    color: #d8dcf0;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .inv-controls button:active { filter: brightness(1.25); }
+  .inv-controls input {
+    width: 50px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    background: rgba(20, 26, 51, 0.9);
+    color: #e2e7ff;
+    height: 34px;
+    padding: 0 4px;
+  }
+  .inv-del {
+    width: 40px !important;
+    height: 40px;
+    background: linear-gradient(180deg, #6a2450, #3a1030) !important;
+    font-size: 18px !important;
+    border: 1px solid #4a1a3a !important;
+    border-radius: 6px;
+    color: #f0d8e8;
+    cursor: pointer;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .inv-desc-btn {
+    width: 40px !important;
+    height: 40px;
+    background: linear-gradient(180deg, #4a3a80, #2a1a52) !important;
+    font-size: 18px !important;
+    border: 1px solid #3a2a68 !important;
+    border-radius: 6px;
+    color: #d8dcf0;
+    cursor: pointer;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .inv-desc-btn.active {
+    background: linear-gradient(180deg, #5a4a98, #3a2a68) !important;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+  }
+
+  .skill-item, .ability-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    background: rgba(20, 26, 51, 0.65);
+    border: 1px solid #2c3560;
+    border-left: 4px solid #4a3a80;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .ability-item {
+    border-left-color: #6a2450;
+  }
+  .skill-row-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .skill-row-fields > .suffix-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .skill-row-fields > .suffix-wrap.hidden {
+    display: none;
+  }
+  .skill-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .skill-row-actions .spacer {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .skill-item .skill-field,
+  .ability-item .skill-field {
+    padding: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #e2e7ff;
+    background: rgba(20, 26, 51, 0.85);
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    outline: none;
+    width: 100%;
+  }
+  .skill-item .skill-name,
+  .ability-item .skill-name { font-weight: 700; }
+
+  .suffix-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+  .suffix-wrap > input {
+    flex: 1;
+    min-width: 0;
+  }
+  .suffix {
+    font-size: 12px;
+    color: #6a7ad8;
+    font-style: italic;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+  .suffix-wrap.hidden {
+    display: none;
+  }
+
+  .restore-btn {
+    width: 30px;
+    height: 40px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    color: #d8dcf0;
+    border: 1px solid #2c3560;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.75;
+    flex: 0 0 30px;
+  }
+  .restore-btn:hover { opacity: 1; }
+  .restore-btn.hidden { display: none; }
+
+  .skill-desc, .ability-desc {
+    margin-top: 2px;
+    display: none;
+  }
+  .skill-desc.open, .ability-desc.open { display: block; }
+  .skill-desc textarea, .ability-desc textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    color: #e2e7ff;
+    background: rgba(20, 26, 51, 0.95);
+    border: 1px dashed #3a4680;
+    border-radius: 6px;
+    resize: none;
+    overflow: hidden;
+    min-height: 40px;
+    line-height: 1.4;
+  }
+  .skill-desc textarea:not([readonly]),
+  .ability-desc textarea:not([readonly]) {
+    border: 1px solid #6a7ad8;
+    background: #1a2142;
+    cursor: text;
+  }
+  .skill-desc textarea[readonly],
+  .ability-desc textarea[readonly] {
+    cursor: pointer;
+    color: #c8d0f5;
+  }
+  .skill-del, .ability-del {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #6a2450, #3a1030);
+    border: 1px solid #4a1a3a;
+    font-size: 18px;
+    border-radius: 6px;
+    color: #f0d8e8;
+    cursor: pointer;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .skill-desc-btn, .ability-desc-btn {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #4a3a80, #2a1a52);
+    border: 1px solid #3a2a68;
+    font-size: 18px;
+    border-radius: 6px;
+    color: #d8dcf0;
+    cursor: pointer;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .ability-desc-btn {
+    background: linear-gradient(180deg, #6a2450, #3a1030);
+    border: 1px solid #4a1a3a;
+  }
+  .skill-desc-btn.active, .ability-desc-btn.active {
+    background: linear-gradient(180deg, #5a4a98, #3a2a68);
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: #d8dcf0;
+    background: linear-gradient(180deg, #2c3560, #141a33);
+    border: 1px solid #1a2142;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn:active { filter: brightness(1.25); }
+  .btn.secondary { background: linear-gradient(180deg, #3a4680, #232a52); border-color: #2c3560; }
+  .btn.danger { background: linear-gradient(180deg, #6a2450, #3a1030); border-color: #4a1a3a; }
+
+  .btn.grant {
+    display: inline-block;
+    width: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin: 0;
+    background: linear-gradient(180deg, #3a4680, #232a52);
+    border-radius: 6px;
+  }
+
+  .status {
+    text-align: center;
+    padding: 10px;
+    color: #7ed89a;
+    font-size: 14px;
+    min-height: 20px;
+    font-style: italic;
+  }
+  .status.warn { color: #e87a8a; }
+
+  .lvl-info {
+    text-align: center;
+    font-size: 14px;
+    color: #a8b4e8;
+    margin: 6px 0 8px;
+  }
+  .lvl-info strong { font-size: 16px; color: #c8d0f5; }
+
+  .stat-points-info {
+    text-align: center;
+    font-size: 14px;
+    color: #a8b4e8;
+    margin: 4px 0 8px;
+    padding: 6px 8px;
+    background: rgba(60, 80, 180, 0.2);
+    border-radius: 6px;
+    border: 1px dashed #3a4680;
+  }
+  .stat-points-info strong { color: #c8d0f5; font-size: 16px; }
+  .stat-points-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 4px 0 8px;
+  }
+  .stat-points-row .stat-points-info {
+    margin: 0;
+    flex: 0 1 auto;
+  }
+
+  .divider {
+    text-align: center;
+    margin: 18px 0;
+    color: #4a5798;
+    font-size: 14px;
+    letter-spacing: 6px;
+  }
+
+  .empty-hint {
+    color: #6a7ad8;
+    padding: 12px;
+    text-align: center;
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  /* Кубы */
+  .dice-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .dice-grid .dice-btn:first-child {
+    grid-column: span 4;
+  }
+  .dice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 10px 4px;
+    font-family: inherit;
+    font-weight: 700;
+    color: #cfd6ff;
+    background: linear-gradient(180deg, #2a3060, #141a33);
+    border: 1px solid #2c3560;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+  .dice-btn:hover { border-color: #6a7ad8; }
+  .dice-btn:active { transform: translateY(1px); filter: brightness(1.3); }
+  .dice-btn .dice-ico {
+    font-size: 20px;
+    color: #8a9aea;
+    text-shadow: 0 0 8px rgba(106, 122, 216, 0.6);
+  }
+  .dice-btn .dice-label {
+    font-size: 12px;
+    color: #a8b4e8;
+  }
+  .dice-btn.fate {
+    background: linear-gradient(180deg, #4a3a80, #2a1a52);
+    border-color: #5a4a98;
+  }
+  .dice-btn.fate .dice-ico { color: #c8b8f5; text-shadow: 0 0 10px rgba(160, 140, 245, 0.8); }
+
+  .dice-result {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(20, 26, 51, 0.9);
+    border: 1px solid #3a4680;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 15px;
+    color: #c8d0f5;
+    min-height: 20px;
+    letter-spacing: 0.5px;
+    transition: opacity 0.35s;
+  }
+  .dice-result.fade { opacity: 0; }
+  .dice-result .total {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    display: block;
+    margin-top: 4px;
+  }
+  .dice-result .fate-plus  { color: #7ed89a; }
+  .dice-result .fate-minus { color: #e87a8a; }
+  .dice-result .fate-zero  { color: #8a9aea; }
+
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #131830;
+    border: 2px solid #3a4680;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    color: #d8dcf0;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 { font-family: inherit; font-weight: 700; margin: 0 0 12px; color: #c8d0f5; }
+  .modal p { margin: 6px 0; font-size: 15px; }
+  .modal .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .modal .btn-row .btn { flex: 1; margin: 0; }
+
+  @media (max-width: 600px) {
+    .inv-row-fields { flex-wrap: wrap; }
+    .skill-row-fields { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <h1>Лист персонажа</h1>
+  <p class="subtitle">Тёмное фэнтези</p>
+
+  <div class="menu-grid">
+    <button type="button" class="menu-btn active" data-section="dossier"><span class="menu-ico">✦</span> Досье</button>
+    <button type="button" class="menu-btn" data-section="skills"><span class="menu-ico">✧</span> Умения</button>
+    <button type="button" class="menu-btn" data-section="combat"><span class="menu-ico">⚔</span> Схватка</button>
+    <button type="button" class="menu-btn" data-section="bag"><span class="menu-ico">❖</span> Сумка</button>
+  </div>
+
+  <!-- ===================== ДОСЬЕ ===================== -->
+  <div class="section active" id="section-dossier">
+
+    <h2>Досье</h2>
+
+    <div class="row2">
+      <div>
+        <label class="fld">Имя</label>
+        <input type="text" id="name" autocomplete="off">
+      </div>
+      <div>
+        <label class="fld">Возраст</label>
+        <input type="text" id="age" autocomplete="off">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label class="fld">Раса</label>
+        <input type="text" id="race" autocomplete="off">
+      </div>
+      <div>
+        <label class="fld">Ранг</label>
+        <input type="text" id="rank" autocomplete="off">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label class="fld">Звание</label>
+        <input type="text" id="title" autocomplete="off">
+      </div>
+      <div>
+        <label class="fld">Статус</label>
+        <input type="text" id="status" autocomplete="off">
+      </div>
+    </div>
+
+    <h2>Уровень</h2>
+    <div class="lvl-row">
+      <label>Уровень</label>
+      <input type="number" id="lvl" inputmode="numeric" min="0" value="0">
+    </div>
+    <div class="lvl-info" id="lvlInfo"></div>
+    <button type="button" class="btn secondary" id="btnLevelUp">⬆ Повысить уровень за ОС</button>
+
+    <h2>Характеристики</h2>
+    <div class="stat-points-row">
+      <div class="stat-points-info" id="statPointsInfo"></div>
+      <button type="button" class="btn grant" id="btnGrantStatPoint">➕ Получить очко</button>
+    </div>
+    <div id="stats"></div>
+
+    <h2>Состояния</h2>
+    <textarea id="states" rows="1" placeholder="Отравлен, проклят, вдохновлён, испуган..."></textarea>
+
+    <h2>Травмы</h2>
+    <textarea id="injuries" rows="1" placeholder="Раны, увечья, шрамы, последствия..."></textarea>
+  </div>
+
+  <!-- ===================== УМЕНИЯ ===================== -->
+  <div class="section" id="section-skills">
+
+    <h2>Очки системы (ОС)</h2>
+    <div class="big-counter">
+      <div class="label">Текущие ОС</div>
+      <div class="counter-stacked">
+        <input type="number" id="os" class="counter-value" inputmode="numeric" min="0" value="0">
+        <div class="counter-buttons">
+          <button type="button" data-act="dec100" data-target="os">−100</button>
+          <button type="button" data-act="dec10" data-target="os">−10</button>
+          <button type="button" data-act="inc10" data-target="os">+10</button>
+          <button type="button" data-act="inc100" data-target="os">+100</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>Навыки</h2>
+    <div id="skills"></div>
+    <button type="button" class="btn secondary" id="btnAddSkill">➕ Добавить навык</button>
+
+    <h2>Способности</h2>
+    <div id="abilitiesList"></div>
+    <button type="button" class="btn secondary" id="btnAddAbility">➕ Добавить способность</button>
+  </div>
+
+  <!-- ===================== СХВАТКА ===================== -->
+  <div class="section" id="section-combat">
+
+    <h2>Здоровье и мана</h2>
+    <div class="big-counter">
+      <div class="label">Здоровье (HP)</div>
+      <div class="pool-row" data-pool="hp">
+        <button type="button" data-act="dec">−</button>
+        <div class="pool-input">
+          <input type="number" id="hp" inputmode="numeric" min="0" value="0">
+          <span class="sep">/</span>
+          <span class="max-val" id="hpMax">0</span>
+        </div>
+        <div class="bonus-box">
+          <span class="bonus-label">+бонус</span>
+          <input type="number" id="hpBonus" inputmode="numeric" value="0">
+        </div>
+        <button type="button" data-act="inc">+</button>
+      </div>
+    </div>
+    <div class="big-counter" id="manaBlock">
+      <div class="label">Мана</div>
+      <div class="pool-row" data-pool="mana">
+        <button type="button" data-act="dec">−</button>
+        <div class="pool-input">
+          <input type="number" id="mana" inputmode="numeric" min="0" value="0">
+          <span class="sep">/</span>
+          <span class="max-val" id="manaMax">0</span>
+        </div>
+        <div class="bonus-box">
+          <span class="bonus-label">+бонус</span>
+          <input type="number" id="manaBonus" inputmode="numeric" value="0">
+        </div>
+        <button type="button" data-act="inc">+</button>
+      </div>
+    </div>
+
+    <h2>Атака и броня</h2>
+    <div>
+      <div style="margin-bottom: 8px;">
+        <label class="fld">Атака</label>
+        <textarea id="attack" rows="1" autocomplete="off"></textarea>
+      </div>
+      <div>
+        <label class="fld">Броня</label>
+        <textarea id="armor" rows="1" autocomplete="off"></textarea>
+      </div>
+    </div>
+
+    <h2>Броски кубов</h2>
+    <div class="dice-grid">
+      <button type="button" class="dice-btn fate" data-dice="fate">
+        <span class="dice-ico">✧</span>
+        <span class="dice-label">Fate (4dF)</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d4">
+        <span class="dice-ico">◈</span>
+        <span class="dice-label">d4</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d6">
+        <span class="dice-ico">◆</span>
+        <span class="dice-label">d6</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d8">
+        <span class="dice-ico">◇</span>
+        <span class="dice-label">d8</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d10">
+        <span class="dice-ico">❖</span>
+        <span class="dice-label">d10</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d20">
+        <span class="dice-ico">✦</span>
+        <span class="dice-label">d20</span>
+      </button>
+      <button type="button" class="dice-btn" data-dice="d100">
+        <span class="dice-ico">✵</span>
+        <span class="dice-label">d100</span>
+      </button>
+    </div>
+    <div class="dice-result" id="diceResult"></div>
+  </div>
+
+  <!-- ===================== СУМКА ===================== -->
+  <div class="section" id="section-bag">
+
+    <h2>Рюкзак</h2>
+    <div id="inventory"></div>
+    <button type="button" class="btn secondary" id="btnAddItem">➕ Добавить предмет</button>
+
+    <h2>Заметки</h2>
+    <textarea id="notes" rows="1" placeholder="Свободные заметки, цели, планы, зацепки сюжета..."></textarea>
+  </div>
+
+  <div class="divider">❧ ❧ ❧</div>
+
+  <div class="status" id="status-message"></div>
+
+  <button type="button" class="btn secondary" id="btnSaveFile">💾 Сохранить в файл</button>
+  <button type="button" class="btn danger" id="btnReset">🗑 Сбросить всё</button>
+
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Проверка</h3>
+    <div id="modalText"></div>
+    <div class="btn-row" id="modalBtns"></div>
+  </div>
+</div>
+
+<script id="charData" type="application/json">null</script>
+
+<script>
+(function() {
+  'use strict';
+
+  const THRESHOLDS = [5, 10, 15, 20, 30, 50, 75, 100, 250, 500, 750, 1000];
+  const DEATH_CHANCE = [0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90];
+
+  const LIMIT_COST = {
+    str:  [100, 300, 500, 1000, 1000],
+    dex:  [100, 300, 500, 1000, 1000],
+    per:  [80,  300, 500, 1000, 1000],
+    vit:  [50,  200, 500, 1000, 1000],
+    int:  [80,  300, 500, 1000, 1000],
+    luck: [1000,1000,1000,1000, 1000],
+    wis:  [50,  300, 500, 1000, 1000],
+    cha:  [80,  300, 500, 1000, 1000],
+  };
+
+  const STATS = [
+    { id: 'str',  name: 'Сила' },
+    { id: 'dex',  name: 'Ловкость' },
+    { id: 'per',  name: 'Восприятие' },
+    { id: 'vit',  name: 'Живучесть' },
+    { id: 'int',  name: 'Интеллект' },
+    { id: 'luck', name: 'Удача' },
+    { id: 'wis',  name: 'Мудрость' },
+    { id: 'cha',  name: 'Харизма' },
+  ];
+
+  const SAVE_KEY = 'dark_fantasy_char_v22';
+  const START_STAT_POINTS = 12;
+
+  function levelCost(lvl) {
+    if (lvl < 5)  return 10;
+    if (lvl < 10) return 25;
+    if (lvl < 15) return 50;
+    if (lvl < 20) return 100;
+    if (lvl < 25) return 200;
+    if (lvl < 30) return 400;
+    if (lvl < 35) return 800;
+    if (lvl < 40) return 1500;
+    if (lvl < 45) return 3000;
+    return 6000;
+  }
+
+  function rankBonus(rank) {
+    const r = String(rank || '').trim().toUpperCase();
+    if (r === 'F') return 1;
+    if (r === 'E') return 2;
+    return 1;
+  }
+
+  function maxHp()   { return state.stats.vit.value * 10 + (parseInt(state.hpBonus, 10) || 0); }
+  function maxMana() { return state.stats.int.value * 10 + (parseInt(state.manaBonus, 10) || 0); }
+
+  function defaultState() {
+    const stats = {};
+    STATS.forEach(s => stats[s.id] = { value: 0, limit: 0 });
+    return {
+      name: '', race: '', age: '', rank: '', title: '',
+      status: '', attack: '', armor: '',
+      lvl: 0,
+      hp: 0, mana: 0, os: 0,
+      hpBonus: 0, manaBonus: 0,
+      statPoints: START_STAT_POINTS,
+      stats: stats,
+      states: '', injuries: '',
+      notes: '',
+      inventory: [],
+      skills: [],
+      abilities: [],
+    };
+  }
+
+  let state = defaultState();
+
+  const $ = id => document.getElementById(id);
+
+  function autoResize(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  function bindAutoResize(el) {
+    if (!el) return;
+    el.addEventListener('input', () => autoResize(el));
+    setTimeout(() => autoResize(el), 0);
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn('save error', e);
+    }
+  }
+
+  function loadEmbedded() {
+    const tag = $('charData');
+    if (!tag) return null;
+    const raw = tag.textContent.trim();
+    if (!raw || raw === 'null') return null;
+    try {
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') return data;
+    } catch (e) {
+      console.warn('embedded parse error', e);
+    }
+    return null;
+  }
+
+  function applyData(data) {
+    const fresh = defaultState();
+
+    ['name','race','age','rank','title','status','attack','armor','states','injuries','notes'].forEach(k => {
+      if (typeof data[k] === 'string') fresh[k] = data[k];
+    });
+
+    if (typeof data.lvl === 'number' && !isNaN(data.lvl)) {
+      fresh.lvl = Math.max(0, data.lvl);
+    }
+    ['hp','mana','os','hpBonus','manaBonus'].forEach(k => {
+      if (typeof data[k] === 'number' && !isNaN(data[k])) fresh[k] = data[k];
+    });
+    if (typeof data.statPoints === 'number' && !isNaN(data.statPoints)) {
+      fresh.statPoints = Math.max(0, data.statPoints);
+    }
+
+    if (data.stats && typeof data.stats === 'object') {
+      STATS.forEach(s => {
+        const d = data.stats[s.id];
+        if (d && typeof d === 'object') {
+          fresh.stats[s.id].value = Math.max(0, parseInt(d.value) || 0);
+          fresh.stats[s.id].limit = Math.max(0, Math.min(THRESHOLDS.length, parseInt(d.limit) || 0));
+        }
+      });
+    }
+
+    if (Array.isArray(data.inventory)) {
+      fresh.inventory = data.inventory
+        .filter(it => it && typeof it === 'object')
+        .map(it => ({
+          name: String(it.name || ''),
+          rank: String(it.rank || ''),
+          cost: String(it.cost || ''),
+          fill: String(it.fill || ''),
+          desc: String(it.desc || ''),
+          qty: Math.max(0, parseInt(it.qty) || 0),
+        }));
+    }
+
+    if (Array.isArray(data.skills)) {
+      fresh.skills = data.skills
+        .filter(it => it && typeof it === 'object')
+        .map(it => ({
+          name: String(it.name || ''),
+          rank: String(it.rank || ''),
+          lvl: String(it.lvl || ''),
+          fill: String(it.fill || ''),
+          desc: String(it.desc || ''),
+        }));
+    }
+
+    if (Array.isArray(data.abilities)) {
+      fresh.abilities = data.abilities
+        .filter(it => it && typeof it === 'object')
+        .map(it => ({
+          name: String(it.name || ''),
+          rank: String(it.rank || ''),
+          lvl: String(it.lvl || ''),
+          fill: String(it.fill || ''),
+          desc: String(it.desc || ''),
+        }));
+    }
+
+    state = fresh;
+    state.hp = Math.max(0, Math.min(state.hp, maxHp()));
+    state.mana = Math.max(0, Math.min(state.mana, maxMana()));
+  }
+
+  function load() {
+    const embedded = loadEmbedded();
+    if (embedded) {
+      applyData(embedded);
+      return;
+    }
+    let raw = null;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) {}
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') applyData(data);
+    } catch (e) {
+      console.warn('load error', e);
+    }
+  }
+
+  let fileHandle = null;
+
+  async function saveToFile() {
+    if (!window.showSaveFilePicker) {
+      flash('❌ Браузер не поддерживает сохранение в файл.', true);
+      return;
+    }
+
+    try {
+      if (!fileHandle) {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: 'Чарник интерактивный.html',
+          types: [{
+            description: 'HTML файл',
+            accept: { 'text/html': ['.html'] },
+          }],
+        });
+      }
+
+      const html = buildHtmlWithData();
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(html);
+      await writable.close();
+
+      flash('💾 Сохранено в файл');
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      console.warn('save file error', e);
+      flash('❌ Не удалось сохранить файл', true);
+    }
+  }
+
+  function buildHtmlWithData() {
+    const dataJson = JSON.stringify(state);
+    const clone = document.documentElement.cloneNode(true);
+
+    const dataTag = clone.querySelector('#charData');
+    if (dataTag) {
+      dataTag.textContent = dataJson;
+    } else {
+      const s = clone.ownerDocument.createElement('script');
+      s.id = 'charData';
+      s.type = 'application/json';
+      s.textContent = dataJson;
+      clone.querySelector('body').appendChild(s);
+    }
+
+    const idsToClean = ['stats', 'skills', 'abilitiesList', 'inventory'];
+    idsToClean.forEach(id => {
+      const el = clone.querySelector('#' + id);
+      if (el) el.innerHTML = '';
+    });
+
+    const doctype = '<!DOCTYPE html>\n';
+    return doctype + clone.outerHTML;
+  }
+
+  function flash(msg, warn) {
+    const s = $('status-message');
+    if (!s) return;
+    s.textContent = msg;
+    s.className = 'status' + (warn ? ' warn' : '');
+    clearTimeout(flash._t);
+    flash._t = setTimeout(() => { s.textContent = ''; s.className = 'status'; }, 2500);
+  }
+
+  function isNoValue(v) {
+    return String(v).trim().toLowerCase() === 'нет';
+  }
+
+  function applyNoLogic(wrapEl, restoreEl, value, opts) {
+    if (!wrapEl) return;
+    const hidden = isNoValue(value);
+
+    if (hidden) {
+      wrapEl.classList.add('hidden');
+      wrapEl.style.display = 'none';
+      if (restoreEl) restoreEl.classList.remove('hidden');
+    } else {
+      wrapEl.classList.remove('hidden');
+      wrapEl.style.display = '';
+      if (restoreEl) restoreEl.classList.add('hidden');
+    }
+  }
+
+  function makeSuffixField(opts) {
+    const wrap = document.createElement('div');
+    wrap.className = 'suffix-wrap ' + (opts.wrapperExtraClass || '');
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = opts.className || '';
+    inp.value = opts.value;
+    inp.placeholder = opts.placeholder || '';
+    inp.autocomplete = 'off';
+
+    wrap.appendChild(inp);
+
+    if (opts.suffixText) {
+      const suffix = document.createElement('span');
+      suffix.className = 'suffix';
+      suffix.textContent = opts.suffixText;
+      wrap.appendChild(suffix);
+    }
+
+    const restore = document.createElement('button');
+    restore.type = 'button';
+    restore.className = 'restore-btn hidden';
+    restore.textContent = '↺';
+    restore.title = 'Вернуть столбец';
+
+    inp.addEventListener('input', () => {
+      if (typeof opts.onChange === 'function') opts.onChange(inp.value);
+      applyNoLogic(wrap, restore, inp.value, opts);
+    });
+
+    restore.addEventListener('click', () => {
+      inp.value = '';
+      if (typeof opts.onChange === 'function') opts.onChange('');
+      applyNoLogic(wrap, restore, '', opts);
+    });
+
+    applyNoLogic(wrap, restore, inp.value, opts);
+
+    return { wrap, inp, restore };
+  }
+
+  function bindDragDrop(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let dragEl = null;
+
+    function getCards() {
+      return Array.from(container.querySelectorAll('[data-drag-index]'));
+    }
+
+    function clearMarks() {
+      getCards().forEach(el => {
+        el.classList.remove('drop-before', 'drop-after');
+      });
+    }
+
+    function attachCardHandlers(el) {
+      const handle = el.querySelector('.drag-handle');
+      if (!handle) return;
+
+      el.draggable = true;
+
+      el.addEventListener('pointerdown', (e) => {
+        if (!handle.contains(e.target)) {
+          el.draggable = false;
+          const restore = () => {
+            el.draggable = true;
+            document.removeEventListener('pointerup', restore);
+          };
+          document.addEventListener('pointerup', restore);
+        } else {
+          el.draggable = true;
+        }
+      });
+
+      el.addEventListener('dragstart', (e) => {
+        dragEl = el;
+        el.classList.add('dragging');
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', 'x');
+        } catch (err) {}
+      });
+
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+        clearMarks();
+        dragEl = null;
+      });
+
+      el.addEventListener('dragover', (e) => {
+        if (!dragEl || dragEl === el) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        const before = e.clientY < mid;
+
+        clearMarks();
+        el.classList.add(before ? 'drop-before' : 'drop-after');
+      });
+
+      el.addEventListener('dragleave', () => {
+        el.classList.remove('drop-before', 'drop-after');
+      });
+
+      el.addEventListener('drop', (e) => {
+        if (!dragEl || dragEl === el) return;
+        e.preventDefault();
+
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        const before = e.clientY < mid;
+
+        const cards = getCards();
+        const fromIndex = cards.indexOf(dragEl);
+        const targetIndex = cards.indexOf(el);
+
+        let toIndex = before ? targetIndex : targetIndex + 1;
+        if (fromIndex < toIndex) toIndex -= 1;
+
+        clearMarks();
+
+        if (containerId === 'skills')       reorderArray('skills',    fromIndex, toIndex, renderSkills);
+        if (containerId === 'abilitiesList') reorderArray('abilities', fromIndex, toIndex, renderAbilities);
+        if (containerId === 'inventory')    reorderArray('inventory',  fromIndex, toIndex, renderInventory);
+      });
+    }
+
+    container._attachCardHandlers = attachCardHandlers;
+  }
+
+  function reorderArray(key, fromIndex, toIndex, rerender) {
+    const arr = state[key];
+    if (!arr) return;
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= arr.length) return;
+    if (toIndex < 0) toIndex = 0;
+    if (toIndex > arr.length - 1) toIndex = arr.length - 1;
+
+    const [item] = arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, item);
+
+    save();
+    rerender();
+  }
+
+  function attachHandlersToContainer(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container || !container._attachCardHandlers) return;
+    const cards = container.querySelectorAll('[data-drag-index]');
+    cards.forEach(el => container._attachCardHandlers(el));
+  }
+
+  function buildRow(kind, item, index, opts) {
+    const row = document.createElement('div');
+    row.className = kind === 'skill' ? 'skill-item' : 'ability-item';
+    row.dataset.dragIndex = index;
+
+    const nameRow = document.createElement('div');
+    nameRow.className = 'name-row';
+
+    const handle = document.createElement('div');
+    handle.className = 'drag-handle';
+    handle.textContent = '⋮⋮';
+    handle.title = 'Перетащи';
+
+    const nameInp = document.createElement('input');
+    nameInp.type = 'text';
+    nameInp.className = 'skill-field skill-name name-field';
+    nameInp.value = item.name;
+    nameInp.placeholder = 'Название';
+    nameInp.autocomplete = 'off';
+    nameInp.addEventListener('input', () => { item.name = nameInp.value; save(); });
+
+    const rankField = makeSuffixField({
+      value: item.rank,
+      placeholder: 'Ранг',
+      className: 'skill-field skill-rank rank-field',
+      suffixText: '',
+      wrapperExtraClass: 'skill-rank-wrap rank-field',
+      onChange: (v) => { item.rank = v; save(); },
+    });
+
+    nameRow.appendChild(handle);
+    nameRow.appendChild(nameInp);
+    nameRow.appendChild(rankField.wrap);
+
+    const fieldsRow = document.createElement('div');
+    fieldsRow.className = 'skill-row-fields';
+
+    const lvlField = makeSuffixField({
+      value: item.lvl,
+      placeholder: 'Уровень',
+      className: 'skill-field',
+      suffixText: 'ур.',
+      wrapperExtraClass: 'skill-lvl-wrap',
+      onChange: (v) => { item.lvl = v; save(); },
+    });
+
+    const fillField = makeSuffixField({
+      value: item.fill,
+      placeholder: '0/10',
+      className: 'skill-field',
+      suffixText: 'ос',
+      wrapperExtraClass: 'skill-fill-wrap',
+      onChange: (v) => { item.fill = v; save(); },
+    });
+
+    fieldsRow.appendChild(lvlField.wrap);
+    fieldsRow.appendChild(fillField.wrap);
+
+    const actionsRow = document.createElement('div');
+    actionsRow.className = 'skill-row-actions';
+
+    const descBtn = document.createElement('button');
+    descBtn.type = 'button';
+    descBtn.className = kind === 'skill' ? 'skill-desc-btn' : 'ability-desc-btn';
+    descBtn.textContent = '❖';
+    descBtn.title = 'Описание';
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = kind === 'skill' ? 'skill-del' : 'ability-del';
+    del.textContent = '✕';
+    del.addEventListener('click', () => opts.onRemove(index));
+
+    const spacer = document.createElement('div');
+    spacer.className = 'spacer';
+
+    actionsRow.appendChild(descBtn);
+    actionsRow.appendChild(spacer);
+    actionsRow.appendChild(rankField.restore);
+    actionsRow.appendChild(lvlField.restore);
+    actionsRow.appendChild(fillField.restore);
+    actionsRow.appendChild(del);
+
+    const desc = document.createElement('div');
+    desc.className = kind === 'skill' ? 'skill-desc' : 'ability-desc';
+    const descArea = document.createElement('textarea');
+    descArea.rows = 1;
+    descArea.placeholder = opts.descPlaceholder || 'Описание...';
+    descArea.value = item.desc;
+    descArea.readOnly = true;
+    descArea.addEventListener('input', () => {
+      item.desc = descArea.value;
+      autoResize(descArea);
+      save();
+    });
+    descArea.addEventListener('click', () => {
+      if (descArea.readOnly) {
+        descArea.readOnly = false;
+        descArea.focus();
+        const len = descArea.value.length;
+        try { descArea.setSelectionRange(len, len); } catch(e) {}
+      }
+    });
+    descArea.addEventListener('blur', () => {
+      descArea.readOnly = true;
+      autoResize(descArea);
+    });
+    desc.appendChild(descArea);
+
+    descBtn.addEventListener('click', () => {
+      const open = desc.classList.toggle('open');
+      descBtn.classList.toggle('active', open);
+      if (open) autoResize(descArea);
+      else descArea.readOnly = true;
+    });
+
+    row.appendChild(nameRow);
+    row.appendChild(fieldsRow);
+    row.appendChild(actionsRow);
+    row.appendChild(desc);
+
+    setTimeout(() => autoResize(descArea), 0);
+
+    return row;
+  }
+
+  function renderAll() {
+    $('name').value = state.name;
+    $('race').value = state.race;
+    $('age').value = state.age;
+    $('rank').value = state.rank;
+    $('title').value = state.title;
+    $('status').value = state.status;
+    $('attack').value = state.attack;
+    $('armor').value = state.armor;
+    $('lvl').value = state.lvl;
+    $('os').value = state.os;
+    $('hpBonus').value = state.hpBonus;
+    $('manaBonus').value = state.manaBonus;
+    $('states').value = state.states;
+    $('injuries').value = state.injuries;
+    $('notes').value = state.notes;
+
+    renderStats();
+    renderSkills();
+    renderAbilities();
+    renderInventory();
+    renderLvlInfo();
+    renderStatPoints();
+    renderPools();
+    renderManaVisibility();
+
+    ['attack','armor','states','injuries','notes'].forEach(id => autoResize($(id)));
+  }
+
+  function renderManaVisibility() {
+    const manaBlock = $('manaBlock');
+    if (!manaBlock) return;
+    if (state.stats.wis.value <= 0) {
+      manaBlock.style.display = 'none';
+    } else {
+      manaBlock.style.display = '';
+    }
+  }
+
+  function renderPools() {
+    const mHp = maxHp();
+    const mMana = maxMana();
+
+    if (state.hp > mHp) state.hp = mHp;
+    if (state.hp < 0) state.hp = 0;
+    if (state.mana > mMana) state.mana = mMana;
+    if (state.mana < 0) state.mana = 0;
+
+    $('hp').value = state.hp;
+    $('hpMax').textContent = mHp;
+    $('mana').value = state.mana;
+    $('manaMax').textContent = mMana;
+  }
+
+  function syncPoolsAfterMaxChange(prevHpMax, prevManaMax) {
+    const newHpMax = maxHp();
+    const newManaMax = maxMana();
+
+    const dHp = newHpMax - prevHpMax;
+    const dMana = newManaMax - prevManaMax;
+
+    if (dHp !== 0) {
+      state.hp = state.hp + dHp;
+      if (state.hp < 0) state.hp = 0;
+      if (state.hp > newHpMax) state.hp = newHpMax;
+    }
+    if (dMana !== 0) {
+      state.mana = state.mana + dMana;
+      if (state.mana < 0) state.mana = 0;
+      if (state.mana > newManaMax) state.mana = newManaMax;
+    }
+
+    $('hp').value = state.hp;
+    $('hpMax').textContent = newHpMax;
+    $('mana').value = state.mana;
+    $('manaMax').textContent = newManaMax;
+  }
+
+  function renderStatPoints() {
+    const el = $('statPointsInfo');
+    if (state.statPoints > 0) {
+      el.innerHTML = 'Свободных очков характеристик: <strong>' + state.statPoints + '</strong>';
+    } else {
+      el.innerHTML = 'Свободных очков нет — повышай уровень.';
+    }
+  }
+
+  function renderStats() {
+    const box = $('stats');
+    box.innerHTML = '';
+
+    STATS.forEach(s => {
+      const st = state.stats[s.id];
+      const nextTh = THRESHOLDS[st.limit];
+      const maxNow = (nextTh !== undefined) ? nextTh : '∞';
+
+      const row = document.createElement('div');
+      row.className = 'stat';
+
+      const info = document.createElement('div');
+      info.innerHTML =
+        '<div class="stat-name">' + s.name + '</div>' +
+        '<div class="stat-max">Предел ' + st.limit + ' · макс: ' + maxNow + '</div>';
+
+      const ctr = document.createElement('div');
+      ctr.className = 'stat-controls';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.type = 'button';
+      btnMinus.textContent = '−';
+      btnMinus.addEventListener('click', () => changeStat(s.id, -1));
+
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.inputMode = 'numeric';
+      inp.min = '0';
+      inp.value = st.value;
+      inp.addEventListener('change', () => setStat(s.id, inp.value));
+      inp.addEventListener('blur', () => setStat(s.id, inp.value));
+
+      const btnPlus = document.createElement('button');
+      btnPlus.type = 'button';
+      btnPlus.textContent = '+';
+      btnPlus.addEventListener('click', () => changeStat(s.id, 1));
+
+      ctr.appendChild(btnMinus);
+      ctr.appendChild(inp);
+      ctr.appendChild(btnPlus);
+
+      row.appendChild(info);
+      row.appendChild(ctr);
+      box.appendChild(row);
+    });
+  }
+
+  function renderInventory() {
+    const box = $('inventory');
+    box.innerHTML = '';
+
+    if (!state.inventory.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-hint';
+      empty.textContent = 'Пусто';
+      box.appendChild(empty);
+      return;
+    }
+
+    state.inventory.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'inv-item';
+      row.dataset.dragIndex = i;
+
+      const nameRow = document.createElement('div');
+      nameRow.className = 'name-row';
+
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.textContent = '⋮⋮';
+      handle.title = 'Перетащи';
+
+      const nameInp = document.createElement('input');
+      nameInp.type = 'text';
+      nameInp.className = 'inv-field inv-name name-field';
+      nameInp.value = item.name;
+      nameInp.placeholder = 'Название';
+      nameInp.autocomplete = 'off';
+      nameInp.addEventListener('input', () => { item.name = nameInp.value; save(); });
+
+      const rankField = makeSuffixField({
+        value: item.rank,
+        placeholder: 'Ранг',
+        className: 'inv-field inv-rank rank-field',
+        suffixText: '',
+        wrapperExtraClass: 'inv-rank-wrap rank-field',
+        onChange: (v) => { item.rank = v; save(); },
+      });
+
+      nameRow.appendChild(handle);
+      nameRow.appendChild(nameInp);
+      nameRow.appendChild(rankField.wrap);
+
+      const fieldsRow = document.createElement('div');
+      fieldsRow.className = 'inv-row-fields';
+
+      const fillField = makeSuffixField({
+        value: item.fill,
+        placeholder: '0/10',
+        className: 'inv-field',
+        suffixText: 'ос',
+        wrapperExtraClass: 'inv-fill-wrap',
+        onChange: (v) => { item.fill = v; save(); },
+      });
+
+      const costField = makeSuffixField({
+        value: item.cost,
+        placeholder: 'Цена',
+        className: 'inv-field inv-cost',
+        suffixText: 'ос',
+        wrapperExtraClass: 'inv-cost-wrap',
+        onChange: (v) => { item.cost = v; save(); },
+      });
+
+      fieldsRow.appendChild(fillField.wrap);
+      fieldsRow.appendChild(costField.wrap);
+
+      const actionsRow = document.createElement('div');
+      actionsRow.className = 'inv-row-actions';
+
+      const descBtn = document.createElement('button');
+      descBtn.type = 'button';
+      descBtn.className = 'inv-desc-btn';
+      descBtn.textContent = '❖';
+      descBtn.title = 'Описание предмета';
+
+      const ctr = document.createElement('div');
+      ctr.className = 'inv-controls';
+
+      const btnMinus = document.createElement('button');
+      btnMinus.type = 'button';
+      btnMinus.textContent = '−';
+      btnMinus.addEventListener('click', () => changeItemQty(i, -1));
+
+      const qtyInp = document.createElement('input');
+      qtyInp.type = 'number';
+      qtyInp.inputMode = 'numeric';
+      qtyInp.min = '0';
+      qtyInp.value = item.qty;
+      qtyInp.addEventListener('change', () => setItemQty(i, qtyInp.value));
+      qtyInp.addEventListener('blur', () => setItemQty(i, qtyInp.value));
+
+      const btnPlus = document.createElement('button');
+      btnPlus.type = 'button';
+      btnPlus.textContent = '+';
+      btnPlus.addEventListener('click', () => changeItemQty(i, 1));
+
+      ctr.appendChild(btnMinus);
+      ctr.appendChild(qtyInp);
+      ctr.appendChild(btnPlus);
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'inv-del';
+      del.textContent = '✕';
+      del.addEventListener('click', () => removeItem(i));
+
+      const spacer = document.createElement('div');
+      spacer.className = 'spacer';
+
+      actionsRow.appendChild(descBtn);
+      actionsRow.appendChild(ctr);
+      actionsRow.appendChild(spacer);
+      actionsRow.appendChild(rankField.restore);
+      actionsRow.appendChild(fillField.restore);
+      actionsRow.appendChild(costField.restore);
+      actionsRow.appendChild(del);
+
+      const desc = document.createElement('div');
+      desc.className = 'inv-desc';
+      const descArea = document.createElement('textarea');
+      descArea.rows = 1;
+      descArea.placeholder = 'Описание предмета...';
+      descArea.value = item.desc;
+      descArea.readOnly = true;
+      descArea.addEventListener('input', () => {
+        item.desc = descArea.value;
+        autoResize(descArea);
+        save();
+      });
+      descArea.addEventListener('click', () => {
+        if (descArea.readOnly) {
+          descArea.readOnly = false;
+          descArea.focus();
+          const len = descArea.value.length;
+          try { descArea.setSelectionRange(len, len); } catch(e) {}
+        }
+      });
+      descArea.addEventListener('blur', () => {
+        descArea.readOnly = true;
+        autoResize(descArea);
+      });
+      desc.appendChild(descArea);
+
+      descBtn.addEventListener('click', () => {
+        const open = desc.classList.toggle('open');
+        descBtn.classList.toggle('active', open);
+        if (open) autoResize(descArea);
+        else descArea.readOnly = true;
+      });
+
+      row.appendChild(nameRow);
+      row.appendChild(fieldsRow);
+      row.appendChild(actionsRow);
+      row.appendChild(desc);
+
+      box.appendChild(row);
+
+      setTimeout(() => autoResize(descArea), 0);
+    });
+
+    attachHandlersToContainer('inventory');
+  }
+
+  function renderSkills() {
+    const box = $('skills');
+    box.innerHTML = '';
+
+    if (!state.skills.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-hint';
+      empty.textContent = 'Нет навыков';
+      box.appendChild(empty);
+      return;
+    }
+
+    state.skills.forEach((skill, i) => {
+      const row = buildRow('skill', skill, i, {
+        onRemove: removeSkill,
+        descPlaceholder: 'Описание навыка...',
+      });
+      box.appendChild(row);
+    });
+
+    attachHandlersToContainer('skills');
+  }
+
+  function renderAbilities() {
+    const box = $('abilitiesList');
+    box.innerHTML = '';
+
+    if (!state.abilities.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-hint';
+      empty.textContent = 'Нет способностей';
+      box.appendChild(empty);
+      return;
+    }
+
+    state.abilities.forEach((ability, i) => {
+      const row = buildRow('ability', ability, i, {
+        onRemove: removeAbility,
+        descPlaceholder: 'Описание способности...',
+      });
+      box.appendChild(row);
+    });
+
+    attachHandlersToContainer('abilitiesList');
+  }
+
+  function renderLvlInfo() {
+    const cost = levelCost(state.lvl);
+    $('lvlInfo').innerHTML =
+      'Следующий уровень: <strong>' + (state.lvl + 1) + '</strong>' +
+      ' · нужно <strong>' + cost + ' ОС</strong>';
+  }
+
+  function changeHp(step) {
+    const m = maxHp();
+    state.hp = Math.max(0, Math.min(m, state.hp + step));
+    $('hp').value = state.hp;
+    if (state.hp === 0 && m > 0) flash('💀 Персонаж без сознания (HP = 0)', true);
+    save();
+  }
+
+  function changeMana(step) {
+    const m = maxMana();
+    state.mana = Math.max(0, Math.min(m, state.mana + step));
+    $('mana').value = state.mana;
+    save();
+  }
+
+  function changeOs(step) {
+    state.os = Math.max(0, state.os + step);
+    $('os').value = state.os;
+    renderLvlInfo();
+    save();
+  }
+
+  function changeStat(id, step) {
+    const st = state.stats[id];
+    if (!st) return;
+
+    const prevHpMax = maxHp();
+    const prevManaMax = maxMana();
+
+    if (step > 0) {
+      const maxNow = THRESHOLDS[st.limit];
+
+      if (maxNow !== undefined && st.value >= maxNow) {
+        openLimitModal(id);
+        return;
+      }
+
+      if (state.statPoints <= 0) {
+        flash('❌ Нет свободных очков характеристик', true);
+        return;
+      }
+
+      state.statPoints -= 1;
+      st.value = st.value + 1;
+      renderStatPoints();
+    } else {
+      st.value = Math.max(0, st.value + step);
+    }
+
+    renderStats();
+    renderManaVisibility();
+    syncPoolsAfterMaxChange(prevHpMax, prevManaMax);
+    save();
+  }
+
+  function setStat(id, raw) {
+    const st = state.stats[id];
+    if (!st) return;
+
+    const prevHpMax = maxHp();
+    const prevManaMax = maxMana();
+
+    let nv = parseInt(raw, 10);
+    if (isNaN(nv)) nv = 0;
+    nv = Math.max(0, nv);
+
+    const maxNow = THRESHOLDS[st.limit];
+    if (maxNow !== undefined && nv > maxNow) {
+      st.value = maxNow;
+      renderStats();
+      renderManaVisibility();
+      syncPoolsAfterMaxChange(prevHpMax, prevManaMax);
+      save();
+      openLimitModal(id);
+      return;
+    }
+
+    st.value = nv;
+    renderStats();
+    renderManaVisibility();
+    syncPoolsAfterMaxChange(prevHpMax, prevManaMax);
+    save();
+  }
+
+  function openModal(title, html, buttons) {
+    $('modalTitle').textContent = title;
+    $('modalText').innerHTML = html;
+    const btns = $('modalBtns');
+    btns.innerHTML = '';
+    (buttons || []).forEach(b => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn ' + (b.cls || '');
+      btn.textContent = b.text;
+      btn.addEventListener('click', b.onClick);
+      btns.appendChild(btn);
+    });
+    $('modalBg').classList.add('show');
+  }
+
+  function closeModal() {
+    $('modalBg').classList.remove('show');
+  }
+
+  function openLimitModal(id) {
+    const st = state.stats[id];
+    const statName = STATS.find(s => s.id === id).name;
+
+    const currentThreshold = THRESHOLDS[st.limit];
+    const nextLimit = st.limit + 1;
+    const nextThreshold = THRESHOLDS[nextLimit];
+
+    if (currentThreshold === undefined) {
+      flash('Достигнут абсолютный максимум', true);
+      closeModal();
+      return;
+    }
+
+    const deathChance = DEATH_CHANCE[Math.min(nextLimit, DEATH_CHANCE.length - 1)];
+    const costs = LIMIT_COST[id] || [1000,1000,1000,1000,1000];
+    const costIdx = Math.min(st.limit, costs.length - 1);
+    const cost = costs[costIdx];
+
+    const html =
+      '<p>Ты упёрся в <strong>предел ' + st.limit + '</strong> (максимум ' + currentThreshold + ').</p>' +
+      '<p>Преодоление откроет <strong>предел ' + nextLimit + '</strong>' +
+      (nextThreshold !== undefined ? ' (максимум ' + nextThreshold + ')' : '') + '.</p>' +
+      '<p>Стоимость: <strong>' + cost + ' ОС</strong>.</p>' +
+      '<p>Шанс смерти: <strong>' + deathChance + '%</strong>.</p>';
+
+    openModal('⚔ Преодоление предела — ' + statName, html, [
+      { text: '✅ Преодолеть', cls: 'secondary', onClick: () => tryPassLimit(id) },
+      { text: 'Отмена', cls: 'danger', onClick: closeModal },
+    ]);
+  }
+
+  function tryPassLimit(id) {
+    const st = state.stats[id];
+    const nextLimit = st.limit + 1;
+
+    if (THRESHOLDS[st.limit] === undefined) {
+      closeModal();
+      flash('Достигнут абсолютный максимум', true);
+      return;
+    }
+
+    const costs = LIMIT_COST[id] || [1000,1000,1000,1000,1000];
+    const costIdx = Math.min(st.limit, costs.length - 1);
+    const cost = costs[costIdx];
+
+    if (state.os < cost) {
+      closeModal();
+      flash('❌ Не хватает ОС (нужно ' + cost + ', у тебя ' + state.os + ')', true);
+      return;
+    }
+
+    state.os -= cost;
+    $('os').value = state.os;
+
+    const deathChance = DEATH_CHANCE[Math.min(nextLimit, DEATH_CHANCE.length - 1)];
+    const roll = Math.floor(Math.random() * 100) + 1;
+    const died = roll <= deathChance;
+
+    closeModal();
+
+    if (died) {
+      openDeathModal(id, roll, deathChance);
+    } else {
+      st.limit = nextLimit;
+      renderStats();
+      renderPools();
+      renderLvlInfo();
+      renderStatPoints();
+      save();
+      flash('✅ Предел преодолён! Бросок ' + roll + ' vs шанс ' + deathChance + '%');
+    }
+  }
+
+  function openDeathModal(id, roll, chance) {
+    const statName = STATS.find(s => s.id === id).name;
+    const html =
+      '<p>Ты пытался преодолеть предел <strong>' + statName + '</strong>.</p>' +
+      '<p>Бросок: <strong>' + roll + '</strong> (шанс смерти ' + chance + '%).</p>' +
+      '<p style="color:#e87a8a;font-weight:bold;margin-top:12px;font-size:17px;">💀 Персонаж погибает.</p>' +
+      '<p style="font-size:13px;color:#7a85b8;font-style:italic;">' +
+      'Мастер может решить иначе, но система говорит: всё.</p>';
+
+    openModal('Проверка на выживание провалена', html, [
+      { text: 'Принять судьбу', cls: 'danger', onClick: closeModal },
+    ]);
+  }
+
+  function tryLevelUp() {
+    const cost = levelCost(state.lvl);
+    if (state.os < cost) {
+      flash('❌ Нужно ' + cost + ' ОС (у тебя ' + state.os + ')', true);
+      return;
+    }
+    state.os -= cost;
+    state.lvl += 1;
+
+    const bonus = rankBonus(state.rank);
+    state.statPoints = (state.statPoints || 0) + bonus;
+
+    $('os').value = state.os;
+    $('lvl').value = state.lvl;
+    renderLvlInfo();
+    renderStatPoints();
+    save();
+
+    flash('⬆ Уровень ' + state.lvl + '! +' + bonus + ' очк. характеристик');
+  }
+
+  function grantStatPoint() {
+    state.statPoints = (state.statPoints || 0) + 1;
+    renderStatPoints();
+    save();
+    flash('➕ Получено очко характеристик');
+  }
+
+  function addItem() {
+    const name = prompt('Что положить в инвентарь?');
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    state.inventory.push({ name: trimmed, rank: '', cost: '', fill: '', desc: '', qty: 1 });
+    renderInventory();
+    save();
+  }
+
+  function removeItem(i) {
+    state.inventory.splice(i, 1);
+    renderInventory();
+    save();
+  }
+
+  function changeItemQty(i, step) {
+    const it = state.inventory[i];
+    if (!it) return;
+    it.qty = Math.max(0, (parseInt(it.qty, 10) || 0) + step);
+    const rows = document.querySelectorAll('#inventory .inv-item');
+    if (rows[i]) {
+      const qtyInp = rows[i].querySelector('.inv-controls input[type="number"]');
+      if (qtyInp) qtyInp.value = it.qty;
+    }
+    save();
+  }
+
+  function setItemQty(i, raw) {
+    const it = state.inventory[i];
+    if (!it) return;
+    let n = parseInt(raw, 10);
+    if (isNaN(n)) n = 0;
+    it.qty = Math.max(0, n);
+    save();
+  }
+
+  function addSkill() {
+    const name = prompt('Название навыка?');
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    state.skills.push({ name: trimmed, rank: '', lvl: '1', fill: '0/10', desc: '' });
+    renderSkills();
+    save();
+  }
+
+  function removeSkill(i) {
+    state.skills.splice(i, 1);
+    renderSkills();
+    save();
+  }
+
+  function addAbility() {
+    const name = prompt('Название способности?');
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    state.abilities.push({ name: trimmed, rank: '', lvl: '1', fill: '0/10', desc: '' });
+    renderAbilities();
+    save();
+  }
+
+  function removeAbility(i) {
+    state.abilities.splice(i, 1);
+    renderAbilities();
+    save();
+  }
+
+  function resetAll() {
+    if (!confirm('Точно стереть всё? Это необратимо.')) return;
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    state = defaultState();
+    renderAll();
+    flash('🗑 Сброшено');
+  }
+
+  /* ===== Кубы ===== */
+
+  function rollD(sides) {
+    return Math.floor(Math.random() * sides) + 1;
+  }
+
+  function rollFate() {
+    const faces = ['+', '+', '-', '-', ' ', ' '];
+    const rolls = [];
+    for (let i = 0; i < 4; i++) {
+      rolls.push(faces[Math.floor(Math.random() * 6)]);
+    }
+    return rolls;
+  }
+
+  function fateToNum(f) {
+    if (f === '+') return 1;
+    if (f === '-') return -1;
+    return 0;
+  }
+
+  let diceTimer = null;
+
+  function handleDiceClick(kind) {
+    const result = $('diceResult');
+    if (!result) return;
+
+    clearTimeout(diceTimer);
+    result.classList.remove('fade');
+
+    if (kind === 'fate') {
+      const rolls = rollFate();
+      const total = rolls.reduce((s, f) => s + fateToNum(f), 0);
+      const parts = rolls.map(f => {
+        if (f === '+') return '<span class="fate-plus">[+]</span>';
+        if (f === '-') return '<span class="fate-minus">[−]</span>';
+        return '<span class="fate-zero">[ ]</span>';
+      }).join(' ');
+      const totalStr = (total > 0 ? '+' : '') + total;
+      result.innerHTML = 'Fate · 4dF: ' + parts +
+        '<span class="total">Итог: ' + totalStr + '</span>';
+    } else {
+      let sides = 0;
+      if (kind === 'd4') sides = 4;
+      else if (kind === 'd6') sides = 6;
+      else if (kind === 'd8') sides = 8;
+      else if (kind === 'd10') sides = 10;
+      else if (kind === 'd20') sides = 20;
+      else if (kind === 'd100') sides = 100;
+
+      if (!sides) return;
+      const val = rollD(sides);
+      result.innerHTML = kind + ' → <span class="total">' + val + '</span>';
+    }
+
+    diceTimer = setTimeout(() => {
+      result.classList.add('fade');
+      setTimeout(() => { result.innerHTML = ''; result.classList.remove('fade'); }, 400);
+    }, 5000);
+  }
+
+  function bindDice() {
+    document.querySelectorAll('.dice-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleDiceClick(btn.dataset.dice));
+    });
+  }
+
+  /* ===== Меню разделов ===== */
+
+  function bindMenu() {
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.section;
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        const sec = $('section-' + target);
+        if (sec) sec.classList.add('active');
+      });
+    });
+  }
+
+  function bindCounters() {
+    document.querySelectorAll('.counter-stacked button[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const act = btn.dataset.act;
+        const target = btn.dataset.target;
+        let delta = 0;
+        if (act === 'dec100') delta = -100;
+        else if (act === 'dec10') delta = -10;
+        else if (act === 'inc10') delta = 10;
+        else if (act === 'inc100') delta = 100;
+
+        if (target === 'os') changeOs(delta);
+      });
+    });
+
+    document.querySelectorAll('.pool-row').forEach(row => {
+      const pool = row.dataset.pool;
+      row.querySelectorAll('button[data-act]').forEach(btn => {
+        const act = btn.dataset.act;
+        btn.addEventListener('click', () => {
+          const delta = (act === 'inc') ? 1 : -1;
+          if (pool === 'hp') changeHp(delta);
+          else if (pool === 'mana') changeMana(delta);
+        });
+      });
+    });
+
+    const osEl = $('os');
+    osEl.addEventListener('input', () => {
+      let v = parseInt(osEl.value, 10);
+      if (isNaN(v)) v = 0;
+      v = Math.max(0, v);
+      state.os = v;
+      renderLvlInfo();
+      save();
+    });
+    osEl.addEventListener('change', () => {
+      let v = parseInt(osEl.value, 10);
+      if (isNaN(v)) v = 0;
+      v = Math.max(0, v);
+      osEl.value = v;
+      state.os = v;
+      renderLvlInfo();
+      save();
+    });
+
+    const hpEl = $('hp');
+    hpEl.addEventListener('change', () => {
+      let v = parseInt(hpEl.value, 10);
+      if (isNaN(v)) v = 0;
+      const m = maxHp();
+      v = Math.max(0, Math.min(m, v));
+      hpEl.value = v;
+      state.hp = v;
+      save();
+    });
+
+    const manaEl = $('mana');
+    manaEl.addEventListener('change', () => {
+      let v = parseInt(manaEl.value, 10);
+      if (isNaN(v)) v = 0;
+      const m = maxMana();
+      v = Math.max(0, Math.min(m, v));
+      manaEl.value = v;
+      state.mana = v;
+      save();
+    });
+
+    const lvlEl = $('lvl');
+    lvlEl.addEventListener('change', () => {
+      let v = parseInt(lvlEl.value, 10);
+      if (isNaN(v)) v = 0;
+      v = Math.max(0, v);
+      lvlEl.value = v;
+      state.lvl = v;
+      renderLvlInfo();
+      save();
+    });
+
+    const hpBonusEl = $('hpBonus');
+    const onHpBonusChange = () => {
+      const prevHpMax = maxHp();
+      const prevManaMax = maxMana();
+
+      let v = parseInt(hpBonusEl.value, 10);
+      if (isNaN(v)) v = 0;
+      state.hpBonus = v;
+
+      syncPoolsAfterMaxChange(prevHpMax, prevManaMax);
+      save();
+    };
+    hpBonusEl.addEventListener('input', onHpBonusChange);
+    hpBonusEl.addEventListener('change', () => {
+      let v = parseInt(hpBonusEl.value, 10);
+      if (isNaN(v)) v = 0;
+      hpBonusEl.value = v;
+      onHpBonusChange();
+    });
+
+    const manaBonusEl = $('manaBonus');
+    const onManaBonusChange = () => {
+      const prevHpMax = maxHp();
+      const prevManaMax = maxMana();
+
+      let v = parseInt(manaBonusEl.value, 10);
+      if (isNaN(v)) v = 0;
+      state.manaBonus = v;
+
+      syncPoolsAfterMaxChange(prevHpMax, prevManaMax);
+      save();
+    };
+    manaBonusEl.addEventListener('input', onManaBonusChange);
+    manaBonusEl.addEventListener('change', () => {
+      let v = parseInt(manaBonusEl.value, 10);
+      if (isNaN(v)) v = 0;
+      manaBonusEl.value = v;
+      onManaBonusChange();
+    });
+  }
+
+  function bindTextFields() {
+    const map = {
+      name: 'name', race: 'race', age: 'age', rank: 'rank',
+      title: 'title', status: 'status',
+      attack: 'attack', armor: 'armor',
+      states: 'states', injuries: 'injuries',
+      notes: 'notes',
+    };
+    Object.keys(map).forEach(id => {
+      const el = $(id);
+      el.addEventListener('input', () => {
+        state[map[id]] = el.value;
+        autoResize(el);
+        save();
+      });
+      bindAutoResize(el);
+    });
+
+    // Автозамена ранга на заглавную латинскую E при вводе e/E/е/Е
+    const rankEl = $('rank');
+    rankEl.addEventListener('input', () => {
+      const raw = rankEl.value;
+      const normalized = raw.replace(/[eEеЕ]/g, 'E');
+      if (normalized !== raw) {
+        const sel = rankEl.selectionStart;
+        rankEl.value = normalized;
+        try { rankEl.setSelectionRange(sel, sel); } catch (e) {}
+        state.rank = normalized;
+        save();
+      }
+      renderLvlInfo();
+    });
+  }
+
+  function init() {
+    load();
+    renderAll();
+    bindMenu();
+    bindCounters();
+    bindTextFields();
+    bindDice();
+
+    bindDragDrop('skills');
+    bindDragDrop('abilitiesList');
+    bindDragDrop('inventory');
+
+    $('btnLevelUp').addEventListener('click', tryLevelUp);
+    $('btnAddItem').addEventListener('click', addItem);
+    $('btnAddSkill').addEventListener('click', addSkill);
+    $('btnAddAbility').addEventListener('click', addAbility);
+    $('btnReset').addEventListener('click', resetAll);
+    $('btnSaveFile').addEventListener('click', saveToFile);
+    $('btnGrantStatPoint').addEventListener('click', grantStatPoint);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('./charnik/sw.js')
+        .then((reg) => console.log('SW зарегистрирован:', reg.scope))
+        .catch((err) => console.warn('SW не зарегистрирован:', err));
+    });
+  }
+</script>
+
+</body>
+</html>
