@@ -1141,14 +1141,14 @@
   const DEATH_CHANCE = [0, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90];
 
   const LIMIT_COST = {
-    str:  [100, 300, 500, 1000, 1000],
-    dex:  [100, 300, 500, 1000, 1000],
-    per:  [80,  300, 500, 1000, 1000],
-    vit:  [50,  200, 500, 1000, 1000],
-    int:  [80,  300, 500, 1000, 1000],
-    luck: [1000,1000,1000,1000, 1000],
-    wis:  [50,  300, 500, 1000, 1000],
-    cha:  [80,  300, 500, 1000, 1000],
+    str:  [0,   100, 300, 500, 1000, 1000],
+    dex:  [0,   100, 300, 500, 1000, 1000],
+    per:  [0,   80,  300, 500, 1000, 1000],
+    vit:  [0,   50,  200, 500, 1000, 1000],
+    int:  [0,   80,  300, 500, 1000, 1000],
+    luck: [0,   1000,1000,1000,1000, 1000],
+    wis:  [0,   50,  300, 500, 1000, 1000],
+    cha:  [0,   80,  300, 500, 1000, 1000],
   };
 
   const STATS = [
@@ -2174,7 +2174,7 @@
     }
 
     const deathChance = DEATH_CHANCE[Math.min(nextLimit, DEATH_CHANCE.length - 1)];
-    const costs = LIMIT_COST[id] || [1000,1000,1000,1000,1000];
+    const costs = LIMIT_COST[id] || [0,1000,1000,1000,1000,1000];
     const costIdx = Math.min(st.limit, costs.length - 1);
     const cost = costs[costIdx];
 
@@ -2201,18 +2201,19 @@
       return;
     }
 
-    const costs = LIMIT_COST[id] || [1000,1000,1000,1000,1000];
+    const costs = LIMIT_COST[id] || [0,1000,1000,1000,1000,1000];
     const costIdx = Math.min(st.limit, costs.length - 1);
     const cost = costs[costIdx];
 
-    if (state.os < cost) {
-      closeModal();
-      flash('❌ Не хватает ОС (нужно ' + cost + ', у тебя ' + state.os + ')', true);
-      return;
+    if (cost > 0) {
+      if (state.os < cost) {
+        closeModal();
+        flash('❌ Не хватает ОС (нужно ' + cost + ', у тебя ' + state.os + ')', true);
+        return;
+      }
+      state.os -= cost;
+      $('os').value = state.os;
     }
-
-    state.os -= cost;
-    $('os').value = state.os;
 
     const deathChance = DEATH_CHANCE[Math.min(nextLimit, DEATH_CHANCE.length - 1)];
     const roll = Math.floor(Math.random() * 100) + 1;
