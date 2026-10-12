@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14201a">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Интерактивный лист персонажа для тёмного фэнтези.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>Лист персонажа — Тёмное фэнтези</title>
+  <style>
+    :root {
+      --bg: #0b100e;
+      --panel: #141d18;
+      --panel-2: #1a261e;
+      --panel-3: #202e24;
+      --line: #3c4e3d;
+      --line-bright: #66794d;
+      --text: #e7e4d2;
+      --muted: #a4ad91;
+      --green: #a9bb72;
+      --green-dark: #546d40;
+      --gold: #c6a66d;
+      --danger: #d27b71;
+      --input: #0d1511;
+      --radius: 15px;
+      --shadow: 0 14px 35px rgba(0,0,0,.22);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--text); background:
+        radial-gradient(ellipse at 50% -10%, rgba(78,103,58,.22), transparent 58%),
+        radial-gradient(ellipse at 100% 40%, rgba(61,80,52,.10), transparent 35%), var(--bg);
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      line-height: 1.45; min-height: 100vh;
+      padding: max(14px, env(safe-area-inset-top)) 12px max(26px, env(safe-area-inset-bottom));
+    }
+    button, input, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .app { width: min(1080px, 100%); margin: 0 auto; }
+    .masthead { position: relative; text-align: center; padding: 21px 12px 24px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--green); font-size: .73rem; letter-spacing: .28em; text-transform: uppercase; }
+    h1 { margin: 7px 0 0; font-size: clamp(1.65rem, 5vw, 2.8rem); line-height: 1.1; letter-spacing: .055em; font-variant: small-caps; font-weight: 700; }
+    .subtitle { color: var(--gold); font-style: italic; margin-top: 7px; font-size: 1rem; letter-spacing: .06em; }
+    .masthead:after { content: "✦"; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); padding: 0 13px; color: var(--gold); background: var(--bg); font-size: .95rem; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 13px; align-items: start; }
+    .section { min-width: 0; background: linear-gradient(145deg, rgba(28,40,31,.97), rgba(17,26,21,.98)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .section-head { display:flex; align-items:center; gap:10px; padding: 13px 15px 11px; border-bottom:1px solid rgba(102,121,77,.35); background: rgba(10,17,13,.28); }
+    .section-mark { color: var(--gold); font-size: 1rem; width: 18px; text-align:center; flex: 0 0 18px; }
+    h2 { margin: 0; font-size: 1.13rem; letter-spacing: .055em; font-variant: small-caps; }
+    h3 { margin: 0; color: var(--green); font-size: 1rem; font-variant: small-caps; letter-spacing: .04em; }
+    .section-body { padding: 14px; }
+    .subtext { color: var(--muted); font-size: .85rem; font-style: italic; }
+    label { display:block; color: var(--muted); font-size: .78rem; margin-bottom: 5px; letter-spacing: .035em; }
+    input, textarea {
+      display:block; width:100%; min-width:0; color:var(--text); background:var(--input);
+      border:1px solid #35483a; border-radius:9px; padding:10px 11px; outline:none;
+      transition: border-color .15s, box-shadow .15s; accent-color:var(--green);
+    }
+    input:focus, textarea:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(169,187,114,.12); }
+    input[type=number] { -moz-appearance:textfield; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+    textarea { resize:none; min-height:88px; overflow:hidden; line-height:1.5; }
+    input::placeholder, textarea::placeholder { color:#75816e; }
+    .btn { border:1px solid var(--line-bright); border-radius:10px; color:var(--text); background:#253428; padding:10px 12px; cursor:pointer; min-height:42px; font-size:.91rem; touch-action:manipulation; }
+    .btn:hover { background:#30432f; border-color:var(--green); }
+    .btn:active { transform:translateY(1px); }
+    .btn.primary { background:linear-gradient(135deg,#536b3d,#354c30); border-color:#738956; color:#f0efd9; }
+    .btn.quiet { background:transparent; border-color:#39493a; color:var(--muted); }
+    .btn.danger { border-color:#744a43; color:#efb0a5; background:#382522; }
+    .btn.icon-btn { min-width:42px; width:42px; padding:7px; display:inline-flex; align-items:center; justify-content:center; font-family:Arial,sans-serif; font-size:1.2rem; line-height:1; }
+    .btn:disabled { cursor:not-allowed; opacity:.42; }
+    .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 10px; }
+    .avatar-area { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:15px; }
+    .avatar-frame { width:100px; aspect-ratio:1; border:1px solid var(--line-bright); border-radius:10px; background:#0d1510; display:flex; justify-content:center; align-items:center; overflow:hidden; color:#83936b; }
+    .avatar-frame img { width:100%; height:100%; object-fit:cover; display:block; }
+    .avatar-placeholder { font-size:2rem; line-height:1; }
+    .avatar-actions { display:flex; flex-direction:row; flex-wrap:wrap; gap:7px; align-items:center; }
+    .avatar-actions .subtext { order:3; flex-basis:100%; }
+    .avatar-actions .btn { min-height:38px; padding:7px 15px; }
+    .resource-card { border:1px solid #394b3b; background:rgba(8,15,11,.28); border-radius:12px; padding:12px; }
+    .resource-card + .resource-card { margin-top:11px; }
+    .resource-title { color:var(--green); font-variant:small-caps; font-size:1rem; letter-spacing:.07em; margin-bottom:9px; }
+    .resource-row { display:grid; grid-template-columns:42px minmax(0,1fr) 18px minmax(0,1fr) minmax(66px,.55fr) 42px; gap:6px; align-items:center; }
+    .resource-row .btn { padding:7px 0; min-height:42px; }
+    .resource-row .slash { text-align:center; color:var(--muted); }
+    .resource-row input { text-align:center; padding:9px 4px; }
+    .resource-row .bonus { min-width:0; }
+    .resource-row .bonus input { font-size:.9rem; }
+    .info-banner { border:1px solid #4d6240; background:linear-gradient(100deg,rgba(83,108,61,.24),rgba(26,41,29,.4)); color:#d7dfbc; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:.9rem; }
+    .info-banner strong { color:#edf0d8; }
+    .stat-list { display:grid; grid-template-columns:1fr; gap:8px; }
+    .stat-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; padding:10px; border:1px solid rgba(75,97,69,.7); border-radius:10px; background:rgba(8,14,10,.27); }
+    .stat-name { font-weight:700; font-size:.98rem; }
+    .stat-limit { font-size:.72rem; color:var(--muted); margin-top:2px; }
+    .stat-controls { display:grid; grid-template-columns:38px 58px 38px; gap:5px; align-items:center; }
+    .stat-controls .btn { min-height:39px; padding:5px 0; }
+    .stat-value { text-align:center; font-weight:700; font-variant-numeric:tabular-nums; padding:8px 3px; }
+    .level-number { display:flex; align-items:baseline; gap:9px; justify-content:center; padding:5px 0 13px; }
+    .level-number strong { font-size:3.3rem; color:var(--green); line-height:1; font-weight:500; }
+    .level-number span { color:var(--muted); font-style:italic; }
+    .level-details { text-align:center; }
+    .level-details .btn { width:100%; margin-top:12px; }
+    .os-value { text-align:center; font-size:1.55rem; font-variant-numeric:tabular-nums; }
+    .os-buttons { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; }
+    .os-buttons .btn { padding:8px 2px; min-height:40px; }
+    .notice { padding:9px 11px; border:1px solid #455b3c; border-radius:9px; color:var(--muted); font-size:.8rem; margin-top:10px; }
+    .notice.warning { border-color:#81584a; color:#edb3a4; background:rgba(109,51,39,.13); }
+    .subsection { margin-top:14px; }
+    .subsection:first-child { margin-top:0; }
+    .subsection-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
+    .subsection-head .btn { min-height:36px; padding:5px 10px; }
+    .collection { display:flex; flex-direction:column; gap:9px; min-height:4px; }
+    .entry { background:rgba(8,14,10,.42); border:1px solid #3c5040; border-radius:12px; padding:11px; position:relative; transition:border-color .15s, opacity .15s; }
+    .entry.dragging { opacity:.55; border-color:var(--gold); }
+    .entry-topline { display:flex; gap:8px; align-items:flex-start; }
+    .drag-handle { flex:0 0 28px; width:28px; height:39px; display:flex; align-items:center; justify-content:center; color:#82916d; border:1px solid #344637; border-radius:8px; cursor:grab; touch-action:none; user-select:none; font: bold 1.15rem Arial,sans-serif; }
+    .entry-fields { flex:1; min-width:0; display:grid; grid-template-columns:minmax(0,1.6fr) minmax(72px,.7fr); gap:8px; }
+    .entry-field { min-width:0; }
+    .entry-field input { padding:9px 8px; min-height:39px; }
+    .entry-field label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:9px 0; }
+    .entry-row:empty { display:none; }
+    .entry-row.one-col { grid-template-columns:minmax(0,1fr); }
+    .with-suffix { position:relative; }
+    .with-suffix input { padding-right:33px; }
+    .suffix { position:absolute; right:9px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:.78rem; color:var(--muted); }
+    .fill-input { letter-spacing:.03em; }
+    .entry-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:3px; }
+    .entry-actions .btn { min-height:35px; height:35px; padding:5px 9px; font-size:.82rem; }
+    .entry-actions .desc-toggle { margin-right:auto; }
+    .restore-label { font-size:.75rem !important; }
+    .entry-description { margin-top:10px; }
+    .entry-description[hidden] { display:none; }
+    .entry-description textarea { min-height:76px; }
+    .empty-hint { padding:13px; text-align:center; border:1px dashed #3b4d3b; border-radius:10px; color:#819078; font-size:.82rem; font-style:italic; }
+    .footer { margin-top:20px; text-align:center; padding:21px 8px 12px; border-top:1px solid var(--line); }
+    .motto { color:var(--gold); font-size:clamp(1rem,3vw,1.2rem); font-style:italic; letter-spacing:.015em; margin-bottom:15px; }
+    .footer-actions { display:flex; justify-content:center; gap:9px; }
+    .footer-actions .btn { min-width:135px; }
+    .save-status { min-height:20px; margin-top:9px; font-size:.8rem; color:var(--muted); }
+    .toast { position:fixed; left:50%; bottom:max(17px,env(safe-area-inset-bottom)); transform:translate(-50%,15px); opacity:0; pointer-events:none; z-index:20; border:1px solid var(--line-bright); border-radius:10px; background:#1a281d; color:var(--text); padding:10px 15px; width:max-content; max-width:calc(100vw - 28px); box-shadow:var(--shadow); transition:opacity .18s,transform .18s; font-size:.88rem; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .modal-backdrop { display:none; position:fixed; inset:0; z-index:30; padding:18px; background:rgba(4,8,5,.78); align-items:center; justify-content:center; }
+    .modal-backdrop.open { display:flex; }
+    .modal { width:min(440px,100%); max-height:min(85vh,720px); overflow:auto; background:#17231b; border:1px solid var(--line-bright); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.5); padding:18px; }
+    .modal h3 { font-size:1.18rem; color:var(--gold); margin-bottom:10px; }
+    .modal p { margin:8px 0; }
+    .modal-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:17px; }
+    .modal-actions .btn { flex:1 1 120px; }
+    .threshold-tables { display:grid; gap:9px; margin-top:12px; }
+    details.threshold-details { border:1px solid #344737; border-radius:9px; overflow:hidden; }
+    details.threshold-details summary { cursor:pointer; padding:10px 11px; background:rgba(8,14,10,.3); color:var(--muted); font-size:.83rem; }
+    .table-wrap { overflow:auto; max-width:100%; }
+    table { border-collapse:collapse; width:100%; font-size:.78rem; font-variant-numeric:tabular-nums; }
+    th,td { padding:7px 8px; text-align:right; border-top:1px solid #314333; white-space:nowrap; }
+    th:first-child,td:first-child { text-align:left; }
+    th { color:var(--green); font-weight:600; }
+    .hidden { display:none !important; }
+    .death-note { border:1px solid #8c4e45; background:rgba(116,43,37,.22); color:#f0b2a8; border-radius:10px; padding:10px; margin-bottom:12px; }
+    @media (min-width: 780px) {
+      body { padding-left:22px; padding-right:22px; }
+      .layout { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:15px; }
+      #section-profile, #section-stats, #section-level, #section-os, #section-pools { grid-column:span 1; }
+      #section-abilities, #section-attack, #section-armor, #section-states, #section-injuries, #section-bag, #section-diary { grid-column:span 1; }
+      #section-abilities, #section-bag, #section-diary { grid-column:1 / -1; }
+      .stat-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .section-body { padding:16px; }
+    }
+    @media (max-width: 380px) {
+      body { padding-left:8px; padding-right:8px; }
+      .section-body { padding:11px; }
+      .avatar-frame { width:84px; }
+      .resource-row { grid-template-columns:36px minmax(0,1fr) 12px minmax(0,1fr) 58px 36px; gap:4px; }
+      .resource-row input { font-size:.87rem; }
+      .stat-controls { grid-template-columns:34px 49px 34px; gap:4px; }
+      .stat-row { padding:8px; gap:6px; }
+      .entry { padding:9px; }
+      .entry-topline { gap:6px; }
+      .drag-handle { flex-basis:25px; width:25px; }
+      .footer-actions .btn { min-width:0; flex:1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div class="eyebrow">Хроники забытых земель</div>
+      <h1>ЛИСТ ПЕРСОНАЖА</h1>
+      <div class="subtitle">Темное фэнтези</div>
+    </header>
+
+    <div id="deathBanner" class="death-note hidden">Персонаж погиб в результате проверки предела. Данные листа сохранены.</div>
+
+    <div class="layout">
+      <section class="section" id="section-profile">
+        <div class="section-head"><span class="section-mark">❖</span><h2>Досье</h2></div>
+        <div class="section-body">
+          <div class="avatar-area">
+            <div class="avatar-frame" id="avatarFrame"><span class="avatar-placeholder">✧</span></div>
+            <div class="avatar-actions">
+              <div class="subtext">Аватар персонажа · PNG</div>
+              <button class="btn" id="avatarButton" type="button">Изменить</button>
+              <button class="btn quiet hidden" id="removeAvatarButton" type="button">Убрать аватар</button>
+              <input id="avatarInput" type="file" accept="image/png" class="hidden">
+            </div>
+          </div>
+          <div class="field-grid">
+            <div><label for="name">Имя</label><input id="name" data-field="name" placeholder="Имя персонажа" autocomplete="off"></div>
+            <div><label for="age">Возраст</label><input id="age" data-field="age" placeholder="Возраст" autocomplete="off"></div>
+            <div><label for="race">Раса</label><input id="race" data-field="race" placeholder="Раса" autocomplete="off"></div>
+            <div><label for="rank">Ранг</label><input id="rank" data-field="rank" placeholder="Например, F или E" autocomplete="off"></div>
+            <div><label for="title">Звание</label><input id="title" data-field="title" placeholder="Звание" autocomplete="off"></div>
+            <div><label for="status">Статус</label><input id="status" data-field="status" placeholder="Статус" autocomplete="off"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="section-stats">
+        <div class="section-head"><span class="section-mark">✥</span><h2>Характеристики</h2></div>
+        <div class="section-body">
+          <div class="info-banner" id="statPointsInfo" aria-live="polite"></div>
+          <button class="btn primary" id="addStatPoint" type="button" style="width:100%;margin-bottom:12px">＋ Получить очко характеристик</button>
+          <div class="stat-list" id="statList"></div>
+          <div class="threshold-tables">
+            <details class="threshold-details">
+              <summary>Сетка порогов и шанс смерти</summary>
+              <div class="table-wrap" id="thresholdTable"></div>
+            </details>
+            <details class="threshold-details">
+              <summary>Стоимость преодоления предела в ОС</summary>
+              <div class="table-wrap" id="costTable"></div>
+            </details>
+          </div>
+          <div class="notice">Для каждого предела каждой характеристики стоимость оплачивается отдельно. Проверку на выживание проводи физическими кубами.</div>
+        </div>
+      </section>
+
+      <section class="section" id="section-level">
+        <div class="section-head"><span class="section-mark">⌁</span><h2>Уровень</h2></div>
+        <div class="section-body level-details">
+          <div class="level-number"><strong id="levelValue">0</strong><span>уровень</span></div>
+          <div class="info-banner" id="levelInfo">До следующего уровня: 10 ОС.</div>
+          <div class="subtext" id="levelReward">Бонус к очкам характеристик зависит от ранга.</div>
+          <button class="btn primary" id="levelUp" type="button">Повысить уровень за ОС</button>
+        </div>
+      </section>
+
+      <section class="section" id="section-os">
+        <div class="section-head"><span class="section-mark">◈</span><h2>Очки Системы (ОС)</h2></div>
+        <div class="section-body">
+          <div class="resource-title">Текущие ОС</div>
+          <input class="os-value" id="os" type="number" min="0" step="1" inputmode="numeric" aria-label="Текущие ОС">
+          <div class="os-buttons">
+            <button class="btn" type="button" data-os-delta="-100">−100</button>
+            <button class="btn" type="button" data-os-delta="-10">−10</button>
+            <button class="btn" type="button" data-os-delta="10">+10</button>
+            <button class="btn" type="button" data-os-delta="100">+100</button>
+          </div>
+          <div class="notice">ОС расходуются на повышение уровня и преодоление пределов характеристик.</div>
+        </div>
+      </section>
+
+      <section class="section" id="section-pools">
+        <div class="section-head"><span class="section-mark">❂</span><h2>Здоровье и Мана</h2></div>
+        <div class="section-body">
+          <div class="resource-card">
+            <div class="resource-title">Здоровье</div>
+            <div class="resource-row">
+              <button class="btn" type="button" data-resource-delta="hp" data-delta="-1" aria-label="Уменьшить здоровье">−</button>
+              <input id="hp" type="number" min="0" step="1" inputmode="numeric" aria-label="Текущие HP">
+              <span class="slash">/</span>
+              <input id="hpMax" type="number" readonly aria-label="Максимальные HP" tabindex="-1">
+              <div class="bonus"><label for="hpBonus">Бонус</label><input id="hpBonus" type="number" step="1" inputmode="numeric" aria-label="Бонус здоровья"></div>
+              <button class="btn" type="button" data-resource-delta="hp" data-delta="1" aria-label="Увеличить здоровье">＋</button>
+            </div>
+          </div>
+          <div class="resource-card" id="manaBlock">
+            <div class="resource-title">Мана</div>
+            <div class="resource-row">
+              <button class="btn" type="button" data-resource-delta="mana" data-delta="-1" aria-label="Уменьшить ману">−</button>
+              <input id="mana" type="number" min="0" step="1" inputmode="numeric" aria-label="Текущее значение маны">
+              <span class="slash">/</span>
+              <input id="manaMax" type="number" readonly aria-label="Максимальная мана" tabindex="-1">
+              <div class="bonus"><label for="manaBonus">Бонус</label><input id="manaBonus" type="number" step="1" inputmode="numeric" aria-label="Бонус маны"></div>
+              <button class="btn" type="button" data-resource-delta="mana" data-delta="1" aria-label="Увеличить ману">＋</button>
+            </div>
+          </div>
+          <div class="notice">Максимум HP = Живучесть × 10 + бонус. Максимум маны = Интеллект × 10 + бонус. Мана отображается, когда у Мудрости есть хотя бы 1 очко.</div>
+        </div>
+      </section>
+
+      <section class="section" id="section-attack">
+        <div class="section-head"><span class="section-mark">⚔</span><h2>Атака</h2></div>
+        <div class="section-body"><textarea id="attack" data-field="attack" placeholder="Оружие, приёмы, модификаторы и заметки…" data-autosize></textarea></div>
+      </section>
+
+      <section class="section" id="section-armor">
+        <div class="section-head"><span class="section-mark">⬡</span><h2>Броня</h2></div>
+        <div class="section-body"><textarea id="armor" data-field="armor" placeholder="Защита, сопротивления и заметки…" data-autosize></textarea></div>
+      </section>
+
+      <section class="section" id="section-states">
+        <div class="section-head"><span class="section-mark">☾</span><h2>Состояния</h2></div>
+        <div class="section-body"><textarea id="states" data-field="states" placeholder="Текущие состояния персонажа…" data-autosize></textarea></div>
+      </section>
+
+      <section class="section" id="section-injuries">
+        <div class="section-head"><span class="section-mark">✣</span><h2>Травмы</h2></div>
+        <div class="section-body"><textarea id="injuries" data-field="injuries" placeholder="Раны, увечья и последствия…" data-autosize></textarea></div>
+      </section>
+
+      <section class="section" id="section-abilities">
+        <div class="section-head"><span class="section-mark">✧</span><h2>Способности</h2></div>
+        <div class="section-body">
+          <div class="subsection">
+            <div class="subsection-head"><h3>Навыки</h3><button class="btn primary" type="button" data-add-item="skills" aria-label="Добавить навык" title="Добавить навык">＋</button></div>
+            <div class="collection" id="skillsList"></div>
+          </div>
+          <div class="subsection">
+            <div class="subsection-head"><h3>Умения</h3><button class="btn primary" type="button" data-add-item="abilities" aria-label="Добавить умение" title="Добавить умение">＋</button></div>
+            <div class="collection" id="abilitiesList"></div>
+          </div>
+          <div class="notice">Перетаскивай карточки за значок ⠿, чтобы менять их порядок в пределах своего подраздела. В полях Ранг, Уровень и Наполненность вводи «Н» или «N», чтобы скрыть соответствующее поле.</div>
+        </div>
+      </section>
+
+      <section class="section" id="section-bag">
+        <div class="section-head"><span class="section-mark">▣</span><h2>Сумка</h2></div>
+        <div class="section-body">
+          <div class="subsection-head"><h3>Предметы</h3><button class="btn primary" type="button" data-add-item="inventory" aria-label="Добавить предмет" title="Добавить предмет">＋</button></div>
+          <div class="collection" id="inventoryList"></div>
+          <div class="notice">Поля Ранг, Наполненность и Цена можно скрыть, введя «Н» или «N». Описание открывается и сворачивается кнопкой с изображением заметки.</div>
+        </div>
+      </section>
+
+      <section class="section" id="section-diary">
+        <div class="section-head"><span class="section-mark">✎</span><h2>Дневник</h2></div>
+        <div class="section-body"><textarea id="diary" data-field="diary" placeholder="Записи, события и мысли персонажа…" data-autosize></textarea></div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <div class="motto">Да сгинет слабый, да пребудет хитрый!</div>
+      <div class="footer-actions">
+        <button class="btn primary" type="button" id="saveButton">Сохранить</button>
+        <button class="btn danger" type="button" id="resetButton">Сбросить все</button>
+      </div>
+      <div class="save-status" id="saveStatus" aria-live="polite">Изменения сохраняются автоматически на этом устройстве.</div>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h3 id="modalTitle">Преодоление предела</h3>
+      <div id="modalBody"></div>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    'use strict';
+    const SAVE_KEY = 'forest_dark_fantasy_character_v1';
+    const THRESHOLDS = [10, 15, 20, 30, 50, 75, 100, 250, 500, 750, 1000];
+    const DEATH_CHANCES = [5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90];
+    const STATS = [
+      { id:'str', name:'Сила', costs:[100,300,500,1000] },
+      { id:'dex', name:'Ловкость', costs:[100,300,500,1000] },
+      { id:'per', name:'Восприятие', costs:[80,300,500,1000] },
+      { id:'vit', name:'Живучесть', costs:[50,200,500,1000] },
+      { id:'int', name:'Интеллект', costs:[80,300,500,1000] },
+      { id:'luck', name:'Удача', costs:[1000,1000,1000,1000] },
+      { id:'wis', name:'Мудрость', costs:[50,300,500,1000] },
+      { id:'cha', name:'Харизма', costs:[80,300,500,1000] },
+    ];
+    const $ = (selector, root=document) => root.querySelector(selector);
+    const $$ = (selector, root=document) => Array.from(root.querySelectorAll(selector));
+    const deepClone = obj => JSON.parse(JSON.stringify(obj));
+    let uidCounter = 0;
+    let toastTimer = null;
+    let dragInfo = null;
+    let preModalFocus = null;
+
+    function newId() { uidCounter += 1; return 'item-' + Date.now().toString(36) + '-' + uidCounter.toString(36); }
+    function defaultState() {
+      const stats = {};
+      STATS.forEach(s => { stats[s.id] = { value:0, limit:0 }; });
+      return {
+        name:'', age:'', race:'', rank:'', title:'', status:'', avatar:'',
+        attack:'', armor:'', states:'', injuries:'', diary:'',
+        level:0, os:0, statPoints:12, dead:false, stats,
+        hp:0, hpBonus:0, mana:0, manaBonus:0,
+        skills:[], abilities:[], inventory:[]
+      };
+    }
+    let state = defaultState();
+    const clampInt = (v, min=0, max=Number.MAX_SAFE_INTEGER) => {
+      const n = Number.parseInt(v, 10);
+      return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : min;
+    };
+    const safeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const maxHp = () => Math.max(0, state.stats.vit.value * 10 + (Number.parseInt(state.hpBonus,10)||0));
+    const maxMana = () => Math.max(0, state.stats.int.value * 10 + (Number.parseInt(state.manaBonus,10)||0));
+    function rankBonus(rank) {
+      const r = String(rank || '').trim().toLocaleUpperCase('ru-RU');
+      if (r === 'F' || r === 'А') return 1; // F на английской раскладке / А на русской.
+      if (r === 'E' || r === 'Е' || r === 'Ё' || r === 'У') return 2; // E / Е / клавиша E в русской раскладке.
+      return 0;
+    }
+    function levelCost(level) {
+      if (level < 5) return 10;
+      if (level < 10) return 25;
+      if (level < 15) return 50;
+      if (level < 20) return 100;
+      if (level < 25) return 200;
+      if (level < 30) return 400;
+      if (level < 35) return 800;
+      if (level < 40) return 1500;
+      if (level < 45) return 3000;
+      return 6000;
+    }
+    function statMax(st) { return THRESHOLDS[st.limit] ?? Infinity; }
+    function statBoundaryCost(stat, limitIndex) { return stat.costs[Math.min(limitIndex, 3)]; }
+    function resourceMaximumChange(prevHp, prevMana, wasHpIncomplete, wasManaIncomplete) {
+      const nextHp = maxHp(), nextMana = maxMana();
+      const dHp = nextHp - prevHp, dMana = nextMana - prevMana;
+      // По заданию прирост текущего ресурса применяем, если до изменения ресурс был неполным.
+      if (wasHpIncomplete && dHp > 0) state.hp = Math.min(nextHp, Math.max(0, state.hp + dHp));
+      if (wasManaIncomplete && dMana > 0) state.mana = Math.min(nextMana, Math.max(0, state.mana + dMana));
+      state.hp = Math.max(0, Math.min(state.hp, nextHp));
+      state.mana = Math.max(0, Math.min(state.mana, nextMana));
+      renderPools();
+    }
+    function snapshotPools() {
+      const hpMax = maxHp(), manaMax = maxMana();
+      return { hpMax, manaMax, hpIncomplete:state.hp < hpMax, manaIncomplete:state.mana < manaMax };
+    }
+    function setToast(message, isError=false) {
+      const toast = $('#toast');
+      toast.textContent = message;
+      toast.style.borderColor = isError ? '#9a584e' : '';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+    function persist(silent=true) {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        const status = $('#saveStatus');
+        if (status) status.textContent = 'Сохранено на этом устройстве.';
+        return true;
+      } catch (error) {
+        console.error('Не удалось сохранить лист персонажа', error);
+        const status = $('#saveStatus');
+        if (status) status.textContent = 'Не удалось сохранить: возможно, не хватает места в хранилище браузера.';
+        if (!silent) setToast('Не удалось сохранить данные. Возможно, аватар слишком большой.', true);
+        return false;
+      }
+    }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        if (!d || typeof d !== 'object') return;
+        const fresh = defaultState();
+        ['name','age','race','rank','title','status','avatar','attack','armor','states','injuries','diary'].forEach(k => { if (typeof d[k] === 'string') fresh[k] = d[k]; });
+        ['level','os','statPoints','hp','hpBonus','mana','manaBonus'].forEach(k => { if (Number.isFinite(Number(d[k]))) fresh[k] = Number(d[k]); });
+        fresh.level = clampInt(fresh.level, 0, 50);
+        fresh.os = clampInt(fresh.os);
+        fresh.statPoints = clampInt(fresh.statPoints);
+        fresh.hpBonus = Number.parseInt(fresh.hpBonus,10)||0;
+        fresh.manaBonus = Number.parseInt(fresh.manaBonus,10)||0;
+        fresh.dead = Boolean(d.dead);
+        if (d.stats && typeof d.stats === 'object') STATS.forEach(s => {
+          const st = d.stats[s.id];
+          if (st && typeof st === 'object') {
+            fresh.stats[s.id].value = clampInt(st.value, 0, 1000);
+            fresh.stats[s.id].limit = clampInt(st.limit, 0, THRESHOLDS.length);
+          }
+        });
+        ['skills','abilities','inventory'].forEach(key => {
+          if (Array.isArray(d[key])) fresh[key] = d[key].filter(x => x && typeof x === 'object').map(x => normalizeItem(x, key));
+        });
+        state = fresh;
+        state.hp = clampInt(state.hp,0,maxHp());
+        state.mana = clampInt(state.mana,0,maxMana());
+      } catch (error) { console.warn('Сохранённые данные не удалось прочитать', error); }
+    }
+    function normalizeItem(source, type) {
+      const base = createItem(type);
+      const result = { ...base, ...source };
+      if (!result.id) result.id = newId();
+      if (!result.hidden || typeof result.hidden !== 'object') result.hidden = {};
+      result.hidden = { ...base.hidden, ...result.hidden };
+      ['name','rank','level','fill','price','description'].forEach(k => { if (typeof result[k] !== 'string') result[k] = String(result[k] ?? ''); });
+      ['expanded'].forEach(k => { result[k] = Boolean(result[k]); });
+      return result;
+    }
+    function createItem(type) {
+      const item = { id:newId(), name:'', rank:'', level:'', fill:'0/10', price:'', description:'', expanded:false, hidden:{} };
+      if (type === 'skills' || type === 'abilities') item.level = '1';
+      if (type === 'inventory') item.price = '';
+      return item;
+    }
+    function renderAvatar() {
+      const frame = $('#avatarFrame');
+      frame.innerHTML = state.avatar ? `<img alt="Аватар персонажа" src="${safeText(state.avatar)}">` : '<span class="avatar-placeholder">✧</span>';
+      $('#removeAvatarButton').classList.toggle('hidden', !state.avatar);
+    }
+    function renderStatPoints() {
+      const el = $('#statPointsInfo');
+      el.innerHTML = state.statPoints > 0
+        ? `Кол-во свободных очков характеристик: <strong>${state.statPoints}</strong>`
+        : 'Свободных очков нет — Повышай уровень';
+    }
+    function renderStats() {
+      const list = $('#statList');
+      list.innerHTML = '';
+      STATS.forEach(stat => {
+        const st = state.stats[stat.id];
+        const max = statMax(st);
+        const showMax = Number.isFinite(max) ? max : 'без ограничений';
+        const unlocked = st.limit;
+        const nextName = unlocked < THRESHOLDS.length ? `Предел ${unlocked + 1} · порог ${THRESHOLDS[unlocked]}` : 'Все пределы пройдены';
+        const row = document.createElement('div');
+        row.className = 'stat-row';
+        row.innerHTML = `<div><div class="stat-name">${stat.name}</div><div class="stat-limit">${nextName} · максимум ${showMax}</div></div>
+          <div class="stat-controls"><button class="btn" type="button" data-stat-delta="-1" data-stat="${stat.id}" aria-label="Уменьшить: ${stat.name}">−</button><input class="stat-value" type="text" inputmode="none" value="${st.value}" readonly aria-label="${stat.name}: текущее значение" tabindex="-1"><button class="btn" type="button" data-stat-delta="1" data-stat="${stat.id}" aria-label="Увеличить: ${stat.name}">＋</button></div>`;
+        const minus = $('[data-stat-delta="-1"]', row);
+        minus.disabled = st.value <= 0;
+        const plus = $('[data-stat-delta="1"]', row);
+        plus.disabled = st.limit >= THRESHOLDS.length && st.value >= 1000;
+        list.appendChild(row);
+      });
+      renderStatPoints();
+    }
+    function renderPools() {
+      const hpMax = maxHp(), manaMax = maxMana();
+      $('#hp').value = state.hp;
+      $('#hpMax').value = hpMax;
+      $('#mana').value = state.mana;
+      $('#manaMax').value = manaMax;
+      $('#manaBlock').classList.toggle('hidden', state.stats.wis.value <= 0);
+    }
+    function renderLevel() {
+      $('#levelValue').textContent = state.level;
+      if (state.level >= 50) {
+        $('#levelInfo').textContent = 'Достигнут максимальный уровень: 50.';
+        $('#levelUp').disabled = true;
+      } else {
+        const cost = levelCost(state.level);
+        $('#levelInfo').innerHTML = `До следующего уровня: <strong>${cost} ОС</strong>. Сейчас: ${state.os} ОС.`;
+        $('#levelUp').disabled = state.os < cost;
+      }
+      const reward = rankBonus(state.rank);
+      $('#levelReward').textContent = reward ? `Следующий уровень даст ${reward} ${reward === 1 ? 'очко' : 'очка'} характеристик (ранг ${state.rank.trim() || 'не указан'}).` : 'Для рангов F/А — 1 очко, E/Е/У — 2 очка. Для других значений бонус не задан.';
+    }
+    function renderOS() {
+      $('#os').value = state.os;
+      renderLevel();
+    }
+    function buildReferenceTables() {
+      const t = $('#thresholdTable');
+      let html = '<table><thead><tr><th>Предел</th><th>Порог</th><th>Шанс смерти</th></tr></thead><tbody>';
+      THRESHOLDS.forEach((value,i) => { html += `<tr><td>${i+1}-й</td><td>${value}</td><td>${DEATH_CHANCES[i]}%</td></tr>`; });
+      t.innerHTML = html + '</tbody></table>';
+      const c = $('#costTable');
+      html = '<table><thead><tr><th>Характеристика</th><th>1-й</th><th>2-й</th><th>3-й</th><th>4-й и далее</th></tr></thead><tbody>';
+      STATS.forEach(s => { html += `<tr><td>${s.name}</td>${s.costs.map(v=>`<td>${v}</td>`).join('')}</tr>`; });
+      c.innerHTML = html + '</tbody></table>';
+    }
+    function renderDeath() { $('#deathBanner').classList.toggle('hidden', !state.dead); }
+    function renderAll() {
+      $$('[data-field]').forEach(el => { el.value = state[el.dataset.field] || ''; resizeTextarea(el); });
+      renderAvatar(); renderStats(); renderPools(); renderOS(); renderCollections(); renderDeath();
+      $('#saveStatus').textContent = 'Изменения сохраняются автоматически на этом устройстве.';
+    }
+    function resizeTextarea(el) {
+      if (!el || el.tagName !== 'TEXTAREA') return;
+      el.style.height = 'auto';
+      el.style.height = Math.max(el.scrollHeight, 70) + 'px';
+    }
+    function openModal(title, bodyHtml, buttons) {
+      preModalFocus = document.activeElement;
+      $('#modalTitle').textContent = title;
+      $('#modalBody').innerHTML = bodyHtml;
+      const actions = $('#modalActions');
+      actions.innerHTML = '';
+      buttons.forEach(spec => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = `btn ${spec.className || ''}`.trim(); b.textContent = spec.label;
+        if (spec.disabled) b.disabled = true;
+        b.addEventListener('click', spec.action);
+        actions.appendChild(b);
+      });
+      $('#modalBackdrop').classList.add('open');
+      const first = $('button', actions); if (first) first.focus();
+    }
+    function closeModal() {
+      $('#modalBackdrop').classList.remove('open');
+      if (preModalFocus && typeof preModalFocus.focus === 'function') preModalFocus.focus();
+    }
+    let pendingLimit = null;
+    function beginLimitCheck(statId) {
+      const stat = STATS.find(s=>s.id===statId), st = state.stats[statId];
+      if (!stat || st.limit >= THRESHOLDS.length) { setToast('Достигнут максимальный предел характеристики.', true); return; }
+      const cost = statBoundaryCost(stat, st.limit);
+      const target = st.limit + 1;
+      const chance = DEATH_CHANCES[st.limit];
+      if (state.os < cost) {
+        openModal('Недостаточно ОС', `<p>Для преодоления <strong>${target}-го предела</strong> характеристики «${stat.name}» нужно <strong>${cost} ОС</strong>.</p><p>Сейчас у тебя ${state.os} ОС. Добавь ОС и попробуй снова.</p>`, [{label:'Понятно',className:'primary',action:closeModal}]);
+        return;
+      }
+      pendingLimit = { statId, cost, target, chance };
+      openModal('Преодоление предела', `<p>Характеристика: <strong>${stat.name}</strong>.</p><p>Порог ${target}-го предела: <strong>${THRESHOLDS[st.limit]}</strong>.</p><p>Стоимость попытки: <strong>${cost} ОС</strong>.</p><p>Шанс смерти: <strong>${chance}%</strong>.</p><p>Оплати попытку, затем брось физические кубы и выбери исход проверки. Приложение не бросает кубы за тебя.</p>`, [
+        {label:`Оплатить ${cost} ОС`,className:'primary',action:payForLimit},
+        {label:'Отмена',action:closeModal}
+      ]);
+    }
+    function payForLimit() {
+      if (!pendingLimit) { closeModal(); return; }
+      if (state.os < pendingLimit.cost) { closeModal(); setToast('Недостаточно ОС.', true); return; }
+      state.os -= pendingLimit.cost;
+      const p = { ...pendingLimit };
+      closeModal();
+      renderOS(); persist();
+      openModal('Результат проверки', `<p>Оплачено: <strong>${p.cost} ОС</strong>.</p><p>Предел: <strong>${p.target}-й</strong>; шанс смерти — <strong>${p.chance}%</strong>.</p><p>Сделай проверку физическими кубами и зафиксируй результат:</p>`, [
+        {label:'Выжил — предел пройден',className:'primary',action:() => resolveLimit(p,true)},
+        {label:'Погиб',className:'danger',action:() => resolveLimit(p,false)}
+      ]);
+    }
+    function resolveLimit(p, survived) {
+      if (survived) {
+        state.stats[p.statId].limit = Math.min(THRESHOLDS.length, state.stats[p.statId].limit + 1);
+        closeModal(); renderStats(); renderPools(); renderLevel(); persist();
+        setToast(`Предел ${p.target}-й пройден.`);
+      } else {
+        state.dead = true; closeModal(); renderDeath(); persist();
+        openModal('Персонаж погиб', `<p>Проверка предела «${STATS.find(s=>s.id===p.statId).name}» провалена.</p><p>Лист и все записи сохранены, чтобы мастер мог решить, что делать дальше.</p>`, [{label:'Принять судьбу',className:'danger',action:closeModal}]);
+      }
+      pendingLimit = null;
+    }
+    function changeStat(id, delta) {
+      const st = state.stats[id]; if (!st) return;
+      if (delta < 0) {
+        if (st.value <= 0) return;
+        const old = snapshotPools(); st.value -= 1; state.statPoints += 1;
+        renderStats();
+        resourceMaximumChange(old.hpMax, old.manaMax, old.hpIncomplete, old.manaIncomplete);
+        persist(); return;
+      }
+      const max = statMax(st);
+      if (st.value >= max) {
+        beginLimitCheck(id); return;
+      }
+      if (state.statPoints <= 0) { setToast('Нет свободных очков характеристик. Повышай уровень.', true); return; }
+      const old = snapshotPools();
+      st.value += 1; state.statPoints -= 1;
+      renderStats();
+      resourceMaximumChange(old.hpMax, old.manaMax, old.hpIncomplete, old.manaIncomplete);
+      persist();
+    }
+    function addStatPoint() { state.statPoints += 1; renderStatPoints(); persist(); setToast('Добавлено 1 очко характеристик.'); }
+    function levelUp() {
+      if (state.level >= 50) return;
+      const cost = levelCost(state.level);
+      if (state.os < cost) { setToast(`Нужно ${cost} ОС, сейчас ${state.os}.`, true); return; }
+      state.os -= cost; state.level += 1;
+      const bonus = rankBonus(state.rank); state.statPoints += bonus;
+      renderOS(); renderStatPoints(); persist();
+      setToast(bonus ? `Уровень повышен. Получено очков характеристик: ${bonus}.` : 'Уровень повышен. Бонус очков для этого ранга не задан.');
+    }
+    function changeOS(delta) { state.os = Math.max(0, clampInt(state.os + delta)); renderOS(); persist(); }
+    function changeResource(kind, delta) {
+      const key = kind === 'hp' ? 'hp' : 'mana';
+      const max = kind === 'hp' ? maxHp() : maxMana();
+      state[key] = Math.max(0, Math.min(max, state[key] + delta));
+      renderPools(); persist();
+    }
+    function setResource(kind, raw) {
+      const key = kind === 'hp' ? 'hp' : 'mana';
+      const max = kind === 'hp' ? maxHp() : maxMana();
+      state[key] = clampInt(raw,0,max);
+      renderPools(); persist();
+    }
+    function updateBonus(kind, raw) {
+      const old = snapshotPools();
+      const key = kind === 'hp' ? 'hpBonus' : 'manaBonus';
+      state[key] = Number.parseInt(raw,10) || 0;
+      resourceMaximumChange(old.hpMax, old.manaMax, old.hpIncomplete, old.manaIncomplete);
+      persist();
+    }
+    function itemLabel(type) { return type === 'skills' ? 'Навык' : type === 'abilities' ? 'Умение' : 'Предмет'; }
+    function fieldIsHidden(value) { return /^[nн]$/i.test(String(value ?? '').trim()); }
+    function fieldDef(type, key, item) {
+      if (key === 'name') return {label:'Название',value:item.name,placeholder:type==='inventory'?'Название предмета':`Название ${itemLabel(type).toLowerCase()}`,hideable:false};
+      if (key === 'rank') return {label:'Ранг',value:item.rank,placeholder:'Ранг',hideable:true};
+      if (key === 'level') return {label:'Уровень',value:item.level,placeholder:'—',hideable:true,suffix:'ур.'};
+      if (key === 'fill') return {label:'Наполненность',value:item.fill,placeholder:'0/10',hideable:true,suffix:'ос',isFill:true};
+      if (key === 'price') return {label:'Цена',value:item.price,placeholder:'Цена',hideable:true,suffix:'ос'};
+      return null;
+    }
+    function renderField(type, item, key) {
+      const def = fieldDef(type,key,item); if (!def) return '';
+      if (item.hidden[key]) return '';
+      const val = safeText(def.value);
+      const inputClass = def.isFill ? 'fill-input' : '';
+      const input = `<input class="${inputClass}" type="text" autocomplete="off" data-item-field="${key}" data-list="${type}" data-id="${safeText(item.id)}" data-hideable="${def.hideable?'1':'0'}" value="${val}" placeholder="${safeText(def.placeholder)}" aria-label="${def.label}" ${def.isFill?'inputmode="text"':''}>`;
+      return `<div class="entry-field"><label>${def.label}</label>${def.suffix ? `<div class="with-suffix">${input}<span class="suffix">${def.suffix}</span></div>` : input}</div>`;
+    }
+    function renderRestoreButton(type,item,key,label) {
+      if (!item.hidden[key]) return '';
+      return `<button type="button" class="btn quiet restore-label" data-restore-field="${key}" data-list="${type}" data-id="${safeText(item.id)}" title="Вернуть поле ${label}" aria-label="Вернуть поле ${label}">↶</button>`;
+    }
+    function renderItem(type,item) {
+      const ability = type === 'skills' || type === 'abilities';
+      const topline = `<div class="entry-topline"><div class="drag-handle" tabindex="0" role="button" aria-label="Перетащить карточку" title="Перетащить">⠿</div><div class="entry-fields">${renderField(type,item,'name')}${renderField(type,item,'rank')}</div></div>`;
+      const row = ability
+        ? `<div class="entry-row ${item.hidden.level && item.hidden.fill ? 'one-col':''}">${renderField(type,item,'level')}${renderField(type,item,'fill')}</div>`
+        : `<div class="entry-row ${item.hidden.fill && item.hidden.price ? 'one-col':''}">${renderField(type,item,'fill')}${renderField(type,item,'price')}</div>`;
+      const restoreFields = ability
+        ? renderRestoreButton(type,item,'rank','Ранг') + renderRestoreButton(type,item,'level','Уровень') + renderRestoreButton(type,item,'fill','Наполненность')
+        : renderRestoreButton(type,item,'rank','Ранг') + renderRestoreButton(type,item,'fill','Наполненность') + renderRestoreButton(type,item,'price','Цена');
+      return `<article class="entry" data-entry="${safeText(item.id)}" data-list="${type}">${topline}${row}<div class="entry-actions"><button class="btn quiet desc-toggle" type="button" data-toggle-description data-list="${type}" data-id="${safeText(item.id)}" title="${item.expanded?'Свернуть описание':'Описание'}" aria-label="${item.expanded?'Свернуть описание':'Открыть описание'}">▤</button>${restoreFields}<button class="btn danger icon-btn" type="button" data-delete-item data-list="${type}" data-id="${safeText(item.id)}" title="Удалить" aria-label="Удалить">×</button></div><div class="entry-description" ${item.expanded?'':'hidden'}><textarea data-item-description data-list="${type}" data-id="${safeText(item.id)}" placeholder="Описание…" data-autosize>${safeText(item.description)}</textarea></div></article>`;
+    }
+    function renderCollections() {
+      [['skills','skillsList'],['abilities','abilitiesList'],['inventory','inventoryList']].forEach(([type,id]) => {
+        const box = $('#'+id); box.innerHTML = '';
+        if (!state[type].length) { box.innerHTML = `<div class="empty-hint">${type==='inventory'?'Сумка пока пуста.':'Пока ничего не добавлено.'}</div>`; return; }
+        box.innerHTML = state[type].map(item=>renderItem(type,item)).join('');
+        $$('textarea[data-autosize]',box).forEach(resizeTextarea);
+      });
+    }
+    function findItem(type,id) { return Array.isArray(state[type]) ? state[type].find(x=>x.id===id) : null; }
+    function collectionChange(type, id, field, value, inputEl) {
+      const item = findItem(type,id); if (!item) return;
+      item[field] = value;
+      if (field === 'fill' && value.includes('/')) {
+        const parts = value.split('/');
+        if (parts.length > 2) item[field] = parts.shift() + '/' + parts.join('').replace(/\//g,'');
+      }
+      if (field !== 'description' && inputEl && inputEl.dataset.hideable === '1' && fieldIsHidden(item[field])) {
+        item.hidden[field] = true;
+        renderCollections(); persist();
+        return;
+      }
+      persist();
+    }
+    function toggleDescription(type,id) {
+      const item = findItem(type,id); if (!item) return;
+      item.expanded = !item.expanded; renderCollections(); persist();
+      if (item.expanded) {
+        const ta = $(`textarea[data-item-description][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
+        if (ta) { ta.focus(); resizeTextarea(ta); }
+      }
+    }
+    function addItem(type) {
+      if (!['skills','abilities','inventory'].includes(type)) return;
+      state[type].push(createItem(type)); renderCollections(); persist();
+      const item = state[type][state[type].length-1];
+      const input = $(`input[data-item-field="name"][data-list="${type}"][data-id="${CSS.escape(item.id)}"]`);
+      if (input) input.focus();
+    }
+    function restoreField(type,id,key) {
+      const item = findItem(type,id); if (!item) return;
+      item.hidden[key] = false;
+      if (fieldIsHidden(item[key])) item[key] = key === 'fill' ? '0/10' : '';
+      renderCollections(); persist();
+      const input = $(`input[data-item-field="${key}"][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
+      if (input) input.focus();
+    }
+    function deleteItem(type,id) {
+      if (!['skills','abilities','inventory'].includes(type)) return;
+      state[type] = state[type].filter(x=>x.id!==id); renderCollections(); persist(); setToast('Карточка удалена.');
+    }
+    function moveEntry(type, draggedId, targetId, after) {
+      if (draggedId === targetId) return;
+      const arr = state[type];
+      const from = arr.findIndex(x=>x.id===draggedId), to = arr.findIndex(x=>x.id===targetId);
+      if (from < 0 || to < 0) return;
+      const [entry] = arr.splice(from,1);
+      let targetIndex = arr.findIndex(x=>x.id===targetId);
+      if (targetIndex < 0) { arr.push(entry); }
+      else { if (after) targetIndex += 1; arr.splice(targetIndex,0,entry); }
+      renderCollections(); persist();
+    }
+    function startDrag(e, handle) {
+      const card = handle.closest('.entry'); if (!card) return;
+      e.preventDefault();
+      dragInfo = { id:card.dataset.entry, type:card.dataset.list, pointerId:e.pointerId, startX:e.clientX, startY:e.clientY, moved:false, card };
+      card.classList.add('dragging');
+      try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+    function onDragMove(e) {
+      if (!dragInfo || dragInfo.pointerId !== e.pointerId) return;
+      if (Math.abs(e.clientY-dragInfo.startY)+Math.abs(e.clientX-dragInfo.startX)>6) dragInfo.moved = true;
+      if (!dragInfo.moved) return;
+      const target = document.elementFromPoint(e.clientX,e.clientY)?.closest('.entry');
+      if (!target || target.dataset.list !== dragInfo.type || target.dataset.entry === dragInfo.id) return;
+      const rect = target.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height/2;
+      const list = target.parentElement;
+      const source = dragInfo.card;
+      if (source === target) return;
+      if (after) {
+        if (target.nextElementSibling !== source) list.insertBefore(source,target.nextElementSibling);
+      } else if (target !== source.nextElementSibling) list.insertBefore(source,target);
+    }
+    function endDrag(e) {
+      if (!dragInfo || (e && dragInfo.pointerId !== e.pointerId)) return;
+      const info = dragInfo; dragInfo = null;
+      $$('.entry.dragging').forEach(el=>el.classList.remove('dragging'));
+      if (info.moved) {
+        const ids = $$(`.entry[data-list="${info.type}"]`).map(el=>el.dataset.entry);
+        state[info.type].sort((a,b)=>ids.indexOf(a.id)-ids.indexOf(b.id));
+        persist(); renderCollections();
+      }
+    }
+    function onFieldChange(e) {
+      const el = e.target;
+      if (el.matches('[data-field]')) {
+        state[el.dataset.field] = el.value;
+        if (el.dataset.field === 'rank') renderLevel();
+        persist(); return;
+      }
+      if (el.id === 'os') { state.os = clampInt(el.value); renderOS(); persist(); return; }
+      if (el.id === 'hp') { setResource('hp',el.value); return; }
+      if (el.id === 'mana') { setResource('mana',el.value); return; }
+      if (el.id === 'hpBonus') { updateBonus('hp',el.value); return; }
+      if (el.id === 'manaBonus') { updateBonus('mana',el.value); return; }
+      if (el.matches('[data-item-field]')) {
+        const {list,id,itemField} = {list:el.dataset.list,id:el.dataset.id,itemField:el.dataset.itemField};
+        collectionChange(list,id,itemField,el.value,el); return;
+      }
+      if (el.matches('[data-item-description]')) { collectionChange(el.dataset.list,el.dataset.id,'description',el.value,el); resizeTextarea(el); return; }
+      if (el.matches('textarea[data-autosize]')) { state[el.dataset.field] = el.value; resizeTextarea(el); persist(); }
+    }
+    function normalizeFillOnBlur(input) {
+      const type = input.dataset.list, id = input.dataset.id, item = findItem(type,id);
+      if (!item || item.hidden.fill) return;
+      const raw = input.value.trim();
+      if (fieldIsHidden(raw)) {
+        item.fill = raw; item.hidden.fill = true; renderCollections(); persist(); return;
+      }
+      if (!raw.includes('/')) input.value = `${raw || '0'}/${(item.fill.split('/')[1] || '10')}`;
+      else {
+        const parts = input.value.split('/');
+        input.value = `${parts.shift()}/${parts.join('').replace(/\//g,'')}`;
+      }
+      item.fill = input.value.replace(/\s/g,''); persist();
+    }
+    function inputChanged(e) {
+      const el=e.target;
+      if (el.matches('[data-item-field]') && el.dataset.itemField==='fill') {
+        const raw=el.value.trim();
+        if (fieldIsHidden(raw)) { collectionChange(el.dataset.list,el.dataset.id,'fill',raw,el); return; }
+        // Слэш — разделитель двух редактируемых частей и не должен исчезать при обычном редактировании.
+        if (!raw.includes('/') && raw.length > 0 && /^\d+$/.test(raw)) {
+          const item=findItem(el.dataset.list,el.dataset.id);
+          const denominator=item && item.fill.includes('/') ? item.fill.split('/')[1] : '10';
+          el.value = `${raw}/${denominator}`;
+          el.setSelectionRange(raw.length,raw.length);
+        }
+      }
+      if (el.matches('textarea[data-autosize]')) resizeTextarea(el);
+      if (el.matches('[data-field]')) { state[el.dataset.field]=el.value; persist(); }
+      if (el.matches('[data-item-description]')) { collectionChange(el.dataset.list,el.dataset.id,'description',el.value,el); resizeTextarea(el); }
+      if (el.matches('[data-item-field]')) collectionChange(el.dataset.list,el.dataset.id,el.dataset.itemField,el.value,el);
+    }
+
+    // Profile fields and expandable text areas save as the player edits.
+    document.addEventListener('input', inputChanged);
+    document.addEventListener('change', onFieldChange);
+    document.addEventListener('focusout', e => {
+      if (e.target.matches('[data-item-field="fill"]')) normalizeFillOnBlur(e.target);
+      if (e.target.matches('textarea[data-autosize]')) resizeTextarea(e.target);
+    });
+    document.addEventListener('keydown', e => {
+      const el=e.target;
+      if (!el.matches('[data-item-field="fill"]')) return;
+      if (e.key === '/' && !el.value.includes('/') ) { e.preventDefault(); return; }
+      if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+      const start=el.selectionStart, end=el.selectionEnd, slash=el.value.indexOf('/');
+      const allSelected=start===0 && end===el.value.length;
+      const selectingSlash=start<=slash && end>slash;
+      if (!allSelected && (selectingSlash || (start===end && e.key==='Backspace' && start===slash+1) || (start===end && e.key==='Delete' && start===slash))) e.preventDefault();
+    });
+    document.addEventListener('click', e => {
+      const stat = e.target.closest('[data-stat-delta]');
+      if (stat) { changeStat(stat.dataset.stat, Number(stat.dataset.statDelta)); return; }
+      const os = e.target.closest('[data-os-delta]');
+      if (os) { changeOS(Number(os.dataset.osDelta)); return; }
+      const resource = e.target.closest('[data-resource-delta]');
+      if (resource) { changeResource(resource.dataset.resourceDelta,Number(resource.dataset.delta)); return; }
+      const add = e.target.closest('[data-add-item]');
+      if (add) { addItem(add.dataset.addItem); return; }
+      const desc = e.target.closest('[data-toggle-description]');
+      if (desc) { toggleDescription(desc.dataset.list,desc.dataset.id); return; }
+      const restore = e.target.closest('[data-restore-field]');
+      if (restore) { restoreField(restore.dataset.list,restore.dataset.id,restore.dataset.restoreField); return; }
+      const del = e.target.closest('[data-delete-item]');
+      if (del) { deleteItem(del.dataset.list,del.dataset.id); return; }
+    });
+    document.addEventListener('pointerdown', e => {
+      const handle=e.target.closest('.drag-handle');
+      if (handle && e.isPrimary && e.button===0) startDrag(e,handle);
+    });
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+
+    $('#addStatPoint').addEventListener('click', addStatPoint);
+    $('#levelUp').addEventListener('click', levelUp);
+    $('#saveButton').addEventListener('click', () => { if (persist(false)) setToast('Лист персонажа сохранён на этом устройстве.'); });
+    $('#resetButton').addEventListener('click', () => openModal('Сбросить все данные?', '<p>Будут удалены досье, аватар, характеристики, ОС, записи, навыки, умения и предметы из этого браузера.</p><p><strong>Это действие нельзя отменить.</strong></p>', [
+      {label:'Сбросить все',className:'danger',action:() => { state=defaultState(); localStorage.removeItem(SAVE_KEY); closeModal(); renderAll(); persist(); setToast('Лист сброшен.'); }},
+      {label:'Отмена',action:closeModal}
+    ]));
+    $('#modalBackdrop').addEventListener('click', e => { if (e.target === $('#modalBackdrop')) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) closeModal(); });
+
+    $('#avatarButton').addEventListener('click', () => $('#avatarInput').click());
+    $('#removeAvatarButton').addEventListener('click', () => { state.avatar=''; renderAvatar(); persist(); setToast('Аватар убран.'); });
+    $('#avatarInput').addEventListener('change', e => {
+      const file=e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.type !== 'image/png') { setToast('Выбери PNG-изображение.',true); e.target.value=''; return; }
+      const reader=new FileReader();
+      reader.onload=() => {
+        const img=new Image();
+        img.onload=() => {
+          try {
+            const side=700, scale=Math.min(1,side/Math.max(img.naturalWidth,img.naturalHeight));
+            const canvas=document.createElement('canvas'); canvas.width=Math.max(1,Math.round(img.naturalWidth*scale)); canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+            const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+            state.avatar=canvas.toDataURL('image/png'); renderAvatar();
+            if (persist(false)) setToast('Аватар обновлён.');
+          } catch (_) { setToast('Не удалось обработать изображение.',true); }
+          e.target.value='';
+        };
+        img.onerror=()=>{setToast('Не удалось открыть изображение.',true);e.target.value='';};
+        img.src=reader.result;
+      };
+      reader.onerror=()=>{setToast('Не удалось прочитать файл.',true);e.target.value='';};
+      reader.readAsDataURL(file);
+    });
+
+    // The static HTML remains usable without service-worker support; GitHub Pages enables install/offline support.
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Service worker registration failed',err)));
+    }
+
+    loadState(); buildReferenceTables(); renderAll();
+  })();
+  </script>
+</body>
+</html>
