@@ -74,31 +74,31 @@
     .btn.icon-btn { min-width:42px; width:42px; padding:7px; display:inline-flex; align-items:center; justify-content:center; font-family:Arial,sans-serif; font-size:1.2rem; line-height:1; }
     .btn:disabled { cursor:not-allowed; opacity:.42; }
     .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px 10px; }
-    .avatar-area { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:15px; }
-    .avatar-frame { width:100px; aspect-ratio:1; border:1px solid var(--line-bright); border-radius:10px; background:#0d1510; display:flex; justify-content:center; align-items:center; overflow:hidden; color:#83936b; }
+    .avatar-area { display:flex; flex-direction:column; align-items:stretch; gap:8px; margin-bottom:15px; }
+    .avatar-frame { width:100%; aspect-ratio:16/9; min-height:120px; border:1px solid var(--line-bright); border-radius:10px; background:#0d1510; display:flex; justify-content:center; align-items:center; overflow:hidden; color:#83936b; }
     .avatar-frame img { width:100%; height:100%; object-fit:cover; display:block; }
     .avatar-placeholder { font-size:2rem; line-height:1; }
     .avatar-actions { display:flex; flex-direction:row; flex-wrap:wrap; gap:7px; align-items:center; }
-    .avatar-actions .subtext { order:3; flex-basis:100%; }
     .avatar-actions .btn { min-height:38px; padding:7px 15px; }
     .resource-card { border:1px solid #394b3b; background:rgba(8,15,11,.28); border-radius:12px; padding:12px; }
     .resource-card + .resource-card { margin-top:11px; }
     .resource-title { color:var(--green); font-variant:small-caps; font-size:1rem; letter-spacing:.07em; margin-bottom:9px; }
-    .resource-row { display:grid; grid-template-columns:42px minmax(0,1fr) 18px minmax(0,1fr) minmax(66px,.55fr) 42px; gap:6px; align-items:center; }
+    .resource-row { display:grid; grid-template-columns:42px minmax(0,1fr) 18px minmax(0,1fr) 42px minmax(46px,.5fr); gap:6px; align-items:center; }
     .resource-row .btn { padding:7px 0; min-height:42px; }
     .resource-row .slash { text-align:center; color:var(--muted); }
     .resource-row input { text-align:center; padding:9px 4px; }
-    .resource-row .bonus { min-width:0; }
-    .resource-row .bonus input { font-size:.9rem; }
+    .resource-row .bonus-input { font-size:.9rem; }
     .info-banner { border:1px solid #4d6240; background:linear-gradient(100deg,rgba(83,108,61,.24),rgba(26,41,29,.4)); color:#d7dfbc; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:.9rem; }
     .info-banner strong { color:#edf0d8; }
     .stat-list { display:grid; grid-template-columns:1fr; gap:8px; }
     .stat-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; padding:10px; border:1px solid rgba(75,97,69,.7); border-radius:10px; background:rgba(8,14,10,.27); }
     .stat-name { font-weight:700; font-size:.98rem; }
     .stat-limit { font-size:.72rem; color:var(--muted); margin-top:2px; }
-    .stat-controls { display:grid; grid-template-columns:38px 58px 38px; gap:5px; align-items:center; }
+    .stat-controls { display:grid; grid-template-columns:38px 58px 38px 46px; gap:5px; align-items:center; }
     .stat-controls .btn { min-height:39px; padding:5px 0; }
-    .stat-value { text-align:center; font-weight:700; font-variant-numeric:tabular-nums; padding:8px 3px; }
+    .stat-controls input { text-align:center; padding:8px 3px; }
+    .stat-value { font-weight:700; font-variant-numeric:tabular-nums; }
+    .stat-bonus { font-variant-numeric:tabular-nums; font-size:.9rem; }
     .level-number { display:flex; align-items:baseline; gap:9px; justify-content:center; padding:5px 0 13px; }
     .level-number strong { font-size:3.3rem; color:var(--green); line-height:1; font-weight:500; }
     .level-number span { color:var(--muted); font-style:italic; }
@@ -108,7 +108,6 @@
     .os-buttons { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:8px; }
     .os-buttons .btn { padding:8px 2px; min-height:40px; }
     .notice { padding:9px 11px; border:1px solid #455b3c; border-radius:9px; color:var(--muted); font-size:.8rem; margin-top:10px; }
-    .notice.warning { border-color:#81584a; color:#edb3a4; background:rgba(109,51,39,.13); }
     .subsection { margin-top:14px; }
     .subsection:first-child { margin-top:0; }
     .subsection-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:9px; }
@@ -120,6 +119,17 @@
     .drag-handle { flex:0 0 28px; width:28px; height:39px; display:flex; align-items:center; justify-content:center; color:#82916d; border:1px solid #344637; border-radius:8px; cursor:grab; touch-action:none; user-select:none; font: bold 1.15rem Arial,sans-serif; }
     .entry-fields { flex:1; min-width:0; display:grid; grid-template-columns:minmax(0,1.6fr) minmax(72px,.7fr); gap:8px; }
     .entry-field { min-width:0; }
+    .field-wrap { position:relative; }
+    .field-view {
+      display:flex; align-items:center; min-height:39px; padding:9px 8px;
+      border:1px solid #35483a; border-radius:9px; background:var(--input);
+      color:var(--text); font-size:.95rem; cursor:text; word-break:break-word;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .field-view:hover { border-color:#4a6149; }
+    .field-view:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(169,187,114,.12); outline:none; }
+    .field-view.empty { color:#75816e; }
+    .field-wrap.with-suffix .field-view { padding-right:33px; }
     .entry-field input { padding:9px 8px; min-height:39px; }
     .entry-field label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .entry-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:9px 0; }
@@ -132,10 +142,16 @@
     .entry-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:3px; }
     .entry-actions .btn { min-height:35px; height:35px; padding:5px 9px; font-size:.82rem; }
     .entry-actions .desc-toggle { margin-right:auto; }
+    .qty-box { display:flex; align-items:center; gap:4px; }
+    .qty-box .btn { min-height:35px; height:35px; min-width:35px; width:35px; padding:0; font-family:Arial,sans-serif; font-size:1.05rem; line-height:1; }
+    .qty-box input { width:52px; text-align:center; padding:6px 4px; min-height:35px; font-size:.9rem; }
     .restore-label { font-size:.75rem !important; }
     .entry-description { margin-top:10px; }
     .entry-description[hidden] { display:none; }
     .entry-description textarea { min-height:76px; }
+    .desc-view { white-space:pre-wrap; word-break:break-word; padding:10px 11px; border:1px solid #35483a; border-radius:9px; background:rgba(8,14,10,.35); color:var(--text); font-size:.9rem; cursor:text; min-height:44px; }
+    .desc-view:focus { border-color:var(--green); box-shadow:0 0 0 2px rgba(169,187,114,.12); outline:none; }
+    .desc-view.empty { color:#75816e; }
     .empty-hint { padding:13px; text-align:center; border:1px dashed #3b4d3b; border-radius:10px; color:#819078; font-size:.82rem; font-style:italic; }
     .footer { margin-top:20px; text-align:center; padding:21px 8px 12px; border-top:1px solid var(--line); }
     .motto { color:var(--gold); font-size:clamp(1rem,3vw,1.2rem); font-style:italic; letter-spacing:.015em; margin-bottom:15px; }
@@ -169,17 +185,18 @@
       #section-abilities, #section-bag, #section-diary { grid-column:1 / -1; }
       .stat-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .section-body { padding:16px; }
+      .avatar-frame { aspect-ratio:21/9; }
     }
     @media (max-width: 380px) {
       body { padding-left:8px; padding-right:8px; }
       .section-body { padding:11px; }
-      .avatar-frame { width:84px; }
-      .resource-row { grid-template-columns:36px minmax(0,1fr) 12px minmax(0,1fr) 58px 36px; gap:4px; }
+      .resource-row { grid-template-columns:36px minmax(0,1fr) 12px minmax(0,1fr) 36px minmax(42px,.5fr); gap:4px; }
       .resource-row input { font-size:.87rem; }
-      .stat-controls { grid-template-columns:34px 49px 34px; gap:4px; }
+      .stat-controls { grid-template-columns:34px 49px 34px 42px; gap:4px; }
       .stat-row { padding:8px; gap:6px; }
       .entry { padding:9px; }
       .entry-topline { gap:6px; }
+      .entry-fields { grid-template-columns:minmax(0,1.4fr) minmax(60px,.6fr); }
       .drag-handle { flex-basis:25px; width:25px; }
       .footer-actions .btn { min-width:0; flex:1; }
     }
@@ -202,10 +219,9 @@
           <div class="avatar-area">
             <div class="avatar-frame" id="avatarFrame"><span class="avatar-placeholder">✧</span></div>
             <div class="avatar-actions">
-              <div class="subtext">Аватар персонажа · PNG</div>
               <button class="btn" id="avatarButton" type="button">Изменить</button>
               <button class="btn quiet hidden" id="removeAvatarButton" type="button">Убрать аватар</button>
-              <input id="avatarInput" type="file" accept="image/png" class="hidden">
+              <input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" class="hidden">
             </div>
           </div>
           <div class="field-grid">
@@ -235,7 +251,6 @@
               <div class="table-wrap" id="costTable"></div>
             </details>
           </div>
-          <div class="notice">Для каждого предела каждой характеристики стоимость оплачивается отдельно. Проверку на выживание проводи физическими кубами.</div>
         </div>
       </section>
 
@@ -244,7 +259,6 @@
         <div class="section-body level-details">
           <div class="level-number"><strong id="levelValue">0</strong><span>уровень</span></div>
           <div class="info-banner" id="levelInfo">До следующего уровня: 10 ОС.</div>
-          <div class="subtext" id="levelReward">Бонус к очкам характеристик зависит от ранга.</div>
           <button class="btn primary" id="levelUp" type="button">Повысить уровень за ОС</button>
         </div>
       </section>
@@ -260,7 +274,6 @@
             <button class="btn" type="button" data-os-delta="10">+10</button>
             <button class="btn" type="button" data-os-delta="100">+100</button>
           </div>
-          <div class="notice">ОС расходуются на повышение уровня и преодоление пределов характеристик.</div>
         </div>
       </section>
 
@@ -274,8 +287,8 @@
               <input id="hp" type="number" min="0" step="1" inputmode="numeric" aria-label="Текущие HP">
               <span class="slash">/</span>
               <input id="hpMax" type="number" readonly aria-label="Максимальные HP" tabindex="-1">
-              <div class="bonus"><label for="hpBonus">Бонус</label><input id="hpBonus" type="number" step="1" inputmode="numeric" aria-label="Бонус здоровья"></div>
               <button class="btn" type="button" data-resource-delta="hp" data-delta="1" aria-label="Увеличить здоровье">＋</button>
+              <input id="hpBonus" class="bonus-input" type="number" step="1" inputmode="numeric" aria-label="Бонус здоровья">
             </div>
           </div>
           <div class="resource-card" id="manaBlock">
@@ -285,11 +298,10 @@
               <input id="mana" type="number" min="0" step="1" inputmode="numeric" aria-label="Текущее значение маны">
               <span class="slash">/</span>
               <input id="manaMax" type="number" readonly aria-label="Максимальная мана" tabindex="-1">
-              <div class="bonus"><label for="manaBonus">Бонус</label><input id="manaBonus" type="number" step="1" inputmode="numeric" aria-label="Бонус маны"></div>
               <button class="btn" type="button" data-resource-delta="mana" data-delta="1" aria-label="Увеличить ману">＋</button>
+              <input id="manaBonus" class="bonus-input" type="number" step="1" inputmode="numeric" aria-label="Бонус маны">
             </div>
           </div>
-          <div class="notice">Максимум HP = Живучесть × 10 + бонус. Максимум маны = Интеллект × 10 + бонус. Мана отображается, когда у Мудрости есть хотя бы 1 очко.</div>
         </div>
       </section>
 
@@ -324,7 +336,6 @@
             <div class="subsection-head"><h3>Умения</h3><button class="btn primary" type="button" data-add-item="abilities" aria-label="Добавить умение" title="Добавить умение">＋</button></div>
             <div class="collection" id="abilitiesList"></div>
           </div>
-          <div class="notice">Перетаскивай карточки за значок ⠿, чтобы менять их порядок в пределах своего подраздела. В полях Ранг, Уровень и Наполненность вводи «Н» или «N», чтобы скрыть соответствующее поле.</div>
         </div>
       </section>
 
@@ -333,7 +344,6 @@
         <div class="section-body">
           <div class="subsection-head"><h3>Предметы</h3><button class="btn primary" type="button" data-add-item="inventory" aria-label="Добавить предмет" title="Добавить предмет">＋</button></div>
           <div class="collection" id="inventoryList"></div>
-          <div class="notice">Поля Ранг, Наполненность и Цена можно скрыть, введя «Н» или «N». Описание открывается и сворачивается кнопкой с изображением заметки.</div>
         </div>
       </section>
 
@@ -380,16 +390,16 @@
     ];
     const $ = (selector, root=document) => root.querySelector(selector);
     const $$ = (selector, root=document) => Array.from(root.querySelectorAll(selector));
-    const deepClone = obj => JSON.parse(JSON.stringify(obj));
     let uidCounter = 0;
     let toastTimer = null;
     let dragInfo = null;
     let preModalFocus = null;
+    let editingField = null; // { list, id, field }
 
     function newId() { uidCounter += 1; return 'item-' + Date.now().toString(36) + '-' + uidCounter.toString(36); }
     function defaultState() {
       const stats = {};
-      STATS.forEach(s => { stats[s.id] = { value:0, limit:0 }; });
+      STATS.forEach(s => { stats[s.id] = { value:0, limit:0, bonus:0 }; });
       return {
         name:'', age:'', race:'', rank:'', title:'', status:'', avatar:'',
         attack:'', armor:'', states:'', injuries:'', diary:'',
@@ -404,12 +414,14 @@
       return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : min;
     };
     const safeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    const maxHp = () => Math.max(0, state.stats.vit.value * 10 + (Number.parseInt(state.hpBonus,10)||0));
-    const maxMana = () => Math.max(0, state.stats.int.value * 10 + (Number.parseInt(state.manaBonus,10)||0));
+    const statBonusVal = (st) => Number.parseInt(st.bonus,10) || 0;
+    const statTotal = (st) => st.value + statBonusVal(st);
+    const maxHp = () => Math.max(0, statTotal(state.stats.vit) * 10 + (Number.parseInt(state.hpBonus,10)||0));
+    const maxMana = () => Math.max(0, statTotal(state.stats.int) * 10 + (Number.parseInt(state.manaBonus,10)||0));
     function rankBonus(rank) {
       const r = String(rank || '').trim().toLocaleUpperCase('ru-RU');
-      if (r === 'F' || r === 'А') return 1; // F на английской раскладке / А на русской.
-      if (r === 'E' || r === 'Е' || r === 'Ё' || r === 'У') return 2; // E / Е / клавиша E в русской раскладке.
+      if (r === 'F' || r === 'А') return 1;
+      if (r === 'E' || r === 'Е' || r === 'Ё' || r === 'У') return 2;
       return 0;
     }
     function levelCost(level) {
@@ -429,7 +441,6 @@
     function resourceMaximumChange(prevHp, prevMana, wasHpIncomplete, wasManaIncomplete) {
       const nextHp = maxHp(), nextMana = maxMana();
       const dHp = nextHp - prevHp, dMana = nextMana - prevMana;
-      // По заданию прирост текущего ресурса применяем, если до изменения ресурс был неполным.
       if (wasHpIncomplete && dHp > 0) state.hp = Math.min(nextHp, Math.max(0, state.hp + dHp));
       if (wasManaIncomplete && dMana > 0) state.mana = Math.min(nextMana, Math.max(0, state.mana + dMana));
       state.hp = Math.max(0, Math.min(state.hp, nextHp));
@@ -482,6 +493,7 @@
           if (st && typeof st === 'object') {
             fresh.stats[s.id].value = clampInt(st.value, 0, 1000);
             fresh.stats[s.id].limit = clampInt(st.limit, 0, THRESHOLDS.length);
+            fresh.stats[s.id].bonus = Number.parseInt(st.bonus,10)||0;
           }
         });
         ['skills','abilities','inventory'].forEach(key => {
@@ -500,10 +512,12 @@
       result.hidden = { ...base.hidden, ...result.hidden };
       ['name','rank','level','fill','price','description'].forEach(k => { if (typeof result[k] !== 'string') result[k] = String(result[k] ?? ''); });
       ['expanded'].forEach(k => { result[k] = Boolean(result[k]); });
+      const parsedQty = Number.parseInt(result.qty, 10);
+      result.qty = Number.isFinite(parsedQty) ? Math.max(0, parsedQty) : 1;
       return result;
     }
     function createItem(type) {
-      const item = { id:newId(), name:'', rank:'', level:'', fill:'0/10', price:'', description:'', expanded:false, hidden:{} };
+      const item = { id:newId(), name:'', rank:'', level:'', fill:'0/10', price:'', description:'', expanded:false, hidden:{}, qty:1 };
       if (type === 'skills' || type === 'abilities') item.level = '1';
       if (type === 'inventory') item.price = '';
       return item;
@@ -528,10 +542,19 @@
         const showMax = Number.isFinite(max) ? max : 'без ограничений';
         const unlocked = st.limit;
         const nextName = unlocked < THRESHOLDS.length ? `Предел ${unlocked + 1} · порог ${THRESHOLDS[unlocked]}` : 'Все пределы пройдены';
+        const total = statTotal(st);
         const row = document.createElement('div');
         row.className = 'stat-row';
-        row.innerHTML = `<div><div class="stat-name">${stat.name}</div><div class="stat-limit">${nextName} · максимум ${showMax}</div></div>
-          <div class="stat-controls"><button class="btn" type="button" data-stat-delta="-1" data-stat="${stat.id}" aria-label="Уменьшить: ${stat.name}">−</button><input class="stat-value" type="text" inputmode="none" value="${st.value}" readonly aria-label="${stat.name}: текущее значение" tabindex="-1"><button class="btn" type="button" data-stat-delta="1" data-stat="${stat.id}" aria-label="Увеличить: ${stat.name}">＋</button></div>`;
+        row.innerHTML = `<div>
+            <div class="stat-name">${stat.name}</div>
+            <div class="stat-limit">${nextName} · максимум ${showMax}</div>
+          </div>
+          <div class="stat-controls">
+            <button class="btn" type="button" data-stat-delta="-1" data-stat="${stat.id}" aria-label="Уменьшить: ${stat.name}">−</button>
+            <input class="stat-value" type="text" inputmode="none" value="${total}" readonly aria-label="${stat.name}: итоговое значение" tabindex="-1">
+            <button class="btn" type="button" data-stat-delta="1" data-stat="${stat.id}" aria-label="Увеличить: ${stat.name}">＋</button>
+            <input class="stat-bonus" type="number" step="1" inputmode="numeric" data-stat-bonus-input data-stat="${stat.id}" value="${statBonusVal(st)}" aria-label="Бонус: ${stat.name}" title="Бонус">
+          </div>`;
         const minus = $('[data-stat-delta="-1"]', row);
         minus.disabled = st.value <= 0;
         const plus = $('[data-stat-delta="1"]', row);
@@ -546,7 +569,9 @@
       $('#hpMax').value = hpMax;
       $('#mana').value = state.mana;
       $('#manaMax').value = manaMax;
-      $('#manaBlock').classList.toggle('hidden', state.stats.wis.value <= 0);
+      $('#hpBonus').value = Number.parseInt(state.hpBonus,10)||0;
+      $('#manaBonus').value = Number.parseInt(state.manaBonus,10)||0;
+      $('#manaBlock').classList.toggle('hidden', statTotal(state.stats.wis) <= 0);
     }
     function renderLevel() {
       $('#levelValue').textContent = state.level;
@@ -558,8 +583,6 @@
         $('#levelInfo').innerHTML = `До следующего уровня: <strong>${cost} ОС</strong>. Сейчас: ${state.os} ОС.`;
         $('#levelUp').disabled = state.os < cost;
       }
-      const reward = rankBonus(state.rank);
-      $('#levelReward').textContent = reward ? `Следующий уровень даст ${reward} ${reward === 1 ? 'очко' : 'очка'} характеристик (ранг ${state.rank.trim() || 'не указан'}).` : 'Для рангов F/А — 1 очко, E/Е/У — 2 очка. Для других значений бонус не задан.';
     }
     function renderOS() {
       $('#os').value = state.os;
@@ -666,6 +689,14 @@
       resourceMaximumChange(old.hpMax, old.manaMax, old.hpIncomplete, old.manaIncomplete);
       persist();
     }
+    function setStatBonus(id, raw) {
+      const st = state.stats[id]; if (!st) return;
+      const old = snapshotPools();
+      st.bonus = Number.parseInt(raw,10)||0;
+      renderStats();
+      resourceMaximumChange(old.hpMax, old.manaMax, old.hpIncomplete, old.manaIncomplete);
+      persist();
+    }
     function addStatPoint() { state.statPoints += 1; renderStatPoints(); persist(); setToast('Добавлено 1 очко характеристик.'); }
     function levelUp() {
       if (state.level >= 50) return;
@@ -674,7 +705,7 @@
       state.os -= cost; state.level += 1;
       const bonus = rankBonus(state.rank); state.statPoints += bonus;
       renderOS(); renderStatPoints(); persist();
-      setToast(bonus ? `Уровень повышен. Получено очков характеристик: ${bonus}.` : 'Уровень повышен. Бонус очков для этого ранга не задан.');
+      setToast(bonus ? `Уровень повышен. Получено очков характеристик: ${bonus}.` : 'Уровень повышен.');
     }
     function changeOS(delta) { state.os = Math.max(0, clampInt(state.os + delta)); renderOS(); persist(); }
     function changeResource(kind, delta) {
@@ -706,28 +737,55 @@
       if (key === 'price') return {label:'Цена',value:item.price,placeholder:'Цена',hideable:true,suffix:'ос'};
       return null;
     }
-    function renderField(type, item, key) {
+    function renderFieldView(type, item, key) {
       const def = fieldDef(type,key,item); if (!def) return '';
-      if (item.hidden[key]) return '';
+      const raw = String(def.value ?? '');
+      const display = raw === '' ? safeText(def.placeholder) : safeText(raw);
+      const empty = raw === '' ? ' empty' : '';
+      const suffix = def.suffix ? `<span class="suffix">${def.suffix}</span>` : '';
+      const wrap = def.suffix ? 'with-suffix' : '';
+      return `<div class="entry-field"><label>${def.label}</label><div class="field-wrap ${wrap}"><div class="field-view${empty}" data-field-view data-list="${type}" data-id="${safeText(item.id)}" data-field-key="${key}" data-hideable="${def.hideable?'1':'0'}" role="textbox" tabindex="0">${display}</div>${suffix}</div></div>`;
+    }
+    function renderFieldInput(type, item, key) {
+      const def = fieldDef(type,key,item); if (!def) return '';
       const val = safeText(def.value);
       const inputClass = def.isFill ? 'fill-input' : '';
       const input = `<input class="${inputClass}" type="text" autocomplete="off" data-item-field="${key}" data-list="${type}" data-id="${safeText(item.id)}" data-hideable="${def.hideable?'1':'0'}" value="${val}" placeholder="${safeText(def.placeholder)}" aria-label="${def.label}" ${def.isFill?'inputmode="text"':''}>`;
-      return `<div class="entry-field"><label>${def.label}</label>${def.suffix ? `<div class="with-suffix">${input}<span class="suffix">${def.suffix}</span></div>` : input}</div>`;
+      const wrap = def.suffix ? 'with-suffix' : '';
+      const suffix = def.suffix ? `<span class="suffix">${def.suffix}</span>` : '';
+      return `<div class="entry-field"><label>${def.label}</label><div class="field-wrap ${wrap}">${input}${suffix}</div></div>`;
+    }
+    function fieldIsEditing(type,id,key) {
+      return editingField && editingField.list === type && editingField.id === id && editingField.field === key;
     }
     function renderRestoreButton(type,item,key,label) {
       if (!item.hidden[key]) return '';
       return `<button type="button" class="btn quiet restore-label" data-restore-field="${key}" data-list="${type}" data-id="${safeText(item.id)}" title="Вернуть поле ${label}" aria-label="Вернуть поле ${label}">↶</button>`;
     }
+    function renderQtyBox(item) {
+      const val = Number.parseInt(item.qty,10) || 0;
+      return `<div class="qty-box"><button class="btn quiet" type="button" data-qty-delta="-1" data-list="inventory" data-id="${safeText(item.id)}" aria-label="Уменьшить количество">−</button><input type="number" step="1" inputmode="numeric" data-qty-input data-list="inventory" data-id="${safeText(item.id)}" value="${val}" aria-label="Количество"><button class="btn quiet" type="button" data-qty-delta="1" data-list="inventory" data-id="${safeText(item.id)}" aria-label="Увеличить количество">＋</button></div>`;
+    }
     function renderItem(type,item) {
       const ability = type === 'skills' || type === 'abilities';
-      const topline = `<div class="entry-topline"><div class="drag-handle" tabindex="0" role="button" aria-label="Перетащить карточку" title="Перетащить">⠿</div><div class="entry-fields">${renderField(type,item,'name')}${renderField(type,item,'rank')}</div></div>`;
+      const nameField = fieldIsEditing(type,item.id,'name') ? renderFieldInput(type,item,'name') : renderFieldView(type,item,'name');
+      const rankField = item.hidden.rank ? '' : (fieldIsEditing(type,item.id,'rank') ? renderFieldInput(type,item,'rank') : renderFieldView(type,item,'rank'));
+      const levelField = item.hidden.level ? '' : (fieldIsEditing(type,item.id,'level') ? renderFieldInput(type,item,'level') : renderFieldView(type,item,'level'));
+      const fillField = item.hidden.fill ? '' : (fieldIsEditing(type,item.id,'fill') ? renderFieldInput(type,item,'fill') : renderFieldView(type,item,'fill'));
+      const priceField = item.hidden.price ? '' : (fieldIsEditing(type,item.id,'price') ? renderFieldInput(type,item,'price') : renderFieldView(type,item,'price'));
+      const topline = `<div class="entry-topline"><div class="drag-handle" tabindex="0" role="button" aria-label="Перетащить карточку" title="Перетащить">⠿</div><div class="entry-fields">${nameField}${rankField}</div></div>`;
       const row = ability
-        ? `<div class="entry-row ${item.hidden.level && item.hidden.fill ? 'one-col':''}">${renderField(type,item,'level')}${renderField(type,item,'fill')}</div>`
-        : `<div class="entry-row ${item.hidden.fill && item.hidden.price ? 'one-col':''}">${renderField(type,item,'fill')}${renderField(type,item,'price')}</div>`;
+        ? `<div class="entry-row ${item.hidden.level && item.hidden.fill ? 'one-col':''}">${levelField}${fillField}</div>`
+        : `<div class="entry-row ${item.hidden.fill && item.hidden.price ? 'one-col':''}">${fillField}${priceField}</div>`;
       const restoreFields = ability
         ? renderRestoreButton(type,item,'rank','Ранг') + renderRestoreButton(type,item,'level','Уровень') + renderRestoreButton(type,item,'fill','Наполненность')
         : renderRestoreButton(type,item,'rank','Ранг') + renderRestoreButton(type,item,'fill','Наполненность') + renderRestoreButton(type,item,'price','Цена');
-      return `<article class="entry" data-entry="${safeText(item.id)}" data-list="${type}">${topline}${row}<div class="entry-actions"><button class="btn quiet desc-toggle" type="button" data-toggle-description data-list="${type}" data-id="${safeText(item.id)}" title="${item.expanded?'Свернуть описание':'Описание'}" aria-label="${item.expanded?'Свернуть описание':'Открыть описание'}">▤</button>${restoreFields}<button class="btn danger icon-btn" type="button" data-delete-item data-list="${type}" data-id="${safeText(item.id)}" title="Удалить" aria-label="Удалить">×</button></div><div class="entry-description" ${item.expanded?'':'hidden'}><textarea data-item-description data-list="${type}" data-id="${safeText(item.id)}" placeholder="Описание…" data-autosize>${safeText(item.description)}</textarea></div></article>`;
+      const qty = type === 'inventory' ? renderQtyBox(item) : '';
+      const descButton = `<button class="btn quiet desc-toggle" type="button" data-toggle-description data-list="${type}" data-id="${safeText(item.id)}" title="${item.expanded?'Свернуть описание':'Описание'}" aria-label="${item.expanded?'Свернуть описание':'Открыть описание'}">▤</button>`;
+      const descView = fieldIsEditing(type,item.id,'description')
+        ? `<textarea data-item-description data-list="${type}" data-id="${safeText(item.id)}" placeholder="Описание…" data-autosize>${safeText(item.description)}</textarea>`
+        : `<div class="desc-view${item.description ? '' : ' empty'}" data-desc-view data-list="${type}" data-id="${safeText(item.id)}" role="textbox" tabindex="0">${safeText(item.description) || 'Описание…'}</div>`;
+      return `<article class="entry" data-entry="${safeText(item.id)}" data-list="${type}">${topline}${row}<div class="entry-actions">${descButton}${qty}${restoreFields}<button class="btn danger icon-btn" type="button" data-delete-item data-list="${type}" data-id="${safeText(item.id)}" title="Удалить" aria-label="Удалить">×</button></div><div class="entry-description" ${item.expanded?'':'hidden'}>${descView}</div></article>`;
     }
     function renderCollections() {
       [['skills','skillsList'],['abilities','abilitiesList'],['inventory','inventoryList']].forEach(([type,id]) => {
@@ -747,6 +805,7 @@
       }
       if (field !== 'description' && inputEl && inputEl.dataset.hideable === '1' && fieldIsHidden(item[field])) {
         item.hidden[field] = true;
+        editingField = null;
         renderCollections(); persist();
         return;
       }
@@ -754,41 +813,59 @@
     }
     function toggleDescription(type,id) {
       const item = findItem(type,id); if (!item) return;
-      item.expanded = !item.expanded; renderCollections(); persist();
-      if (item.expanded) {
-        const ta = $(`textarea[data-item-description][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
-        if (ta) { ta.focus(); resizeTextarea(ta); }
-      }
+      item.expanded = !item.expanded;
+      if (!item.expanded && editingField && editingField.list === type && editingField.id === id && editingField.field === 'description') editingField = null;
+      renderCollections(); persist();
+    }
+    function startFieldEdit(type, id, field) {
+      const item = findItem(type,id); if (!item) return;
+      if (item.hidden[field]) return;
+      editingField = { list:type, id, field };
+      if (field === 'description') item.expanded = true;
+      renderCollections(); persist();
+      setTimeout(() => {
+        if (field === 'description') {
+          const ta = $(`textarea[data-item-description][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
+          if (ta) { ta.focus(); resizeTextarea(ta); }
+        } else {
+          const input = $(`input[data-item-field="${field}"][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
+          if (input) { input.focus(); input.select(); }
+        }
+      }, 0);
+    }
+    function stopFieldEdit() {
+      if (!editingField) return;
+      editingField = null;
+      renderCollections();
     }
     function addItem(type) {
       if (!['skills','abilities','inventory'].includes(type)) return;
-      state[type].push(createItem(type)); renderCollections(); persist();
-      const item = state[type][state[type].length-1];
-      const input = $(`input[data-item-field="name"][data-list="${type}"][data-id="${CSS.escape(item.id)}"]`);
-      if (input) input.focus();
+      const item = createItem(type);
+      state[type].push(item); renderCollections(); persist();
+      startFieldEdit(type, item.id, 'name');
     }
     function restoreField(type,id,key) {
       const item = findItem(type,id); if (!item) return;
       item.hidden[key] = false;
       if (fieldIsHidden(item[key])) item[key] = key === 'fill' ? '0/10' : '';
       renderCollections(); persist();
-      const input = $(`input[data-item-field="${key}"][data-list="${type}"][data-id="${CSS.escape(id)}"]`);
-      if (input) input.focus();
+      startFieldEdit(type, id, key);
     }
     function deleteItem(type,id) {
       if (!['skills','abilities','inventory'].includes(type)) return;
-      state[type] = state[type].filter(x=>x.id!==id); renderCollections(); persist(); setToast('Карточка удалена.');
+      state[type] = state[type].filter(x=>x.id!==id);
+      if (editingField && editingField.list === type && editingField.id === id) editingField = null;
+      renderCollections(); persist(); setToast('Карточка удалена.');
     }
-    function moveEntry(type, draggedId, targetId, after) {
-      if (draggedId === targetId) return;
-      const arr = state[type];
-      const from = arr.findIndex(x=>x.id===draggedId), to = arr.findIndex(x=>x.id===targetId);
-      if (from < 0 || to < 0) return;
-      const [entry] = arr.splice(from,1);
-      let targetIndex = arr.findIndex(x=>x.id===targetId);
-      if (targetIndex < 0) { arr.push(entry); }
-      else { if (after) targetIndex += 1; arr.splice(targetIndex,0,entry); }
+    function changeQty(type,id,delta) {
+      const item = findItem(type,id); if (!item) return;
+      item.qty = Math.max(0, (Number.parseInt(item.qty,10)||0) + delta);
       renderCollections(); persist();
+    }
+    function setQty(type,id,raw) {
+      const item = findItem(type,id); if (!item) return;
+      item.qty = Math.max(0, Number.parseInt(raw,10)||0);
+      persist();
     }
     function startDrag(e, handle) {
       const card = handle.closest('.entry'); if (!card) return;
@@ -834,6 +911,8 @@
       if (el.id === 'mana') { setResource('mana',el.value); return; }
       if (el.id === 'hpBonus') { updateBonus('hp',el.value); return; }
       if (el.id === 'manaBonus') { updateBonus('mana',el.value); return; }
+      if (el.matches('[data-stat-bonus-input]')) { setStatBonus(el.dataset.stat, el.value); return; }
+      if (el.matches('[data-qty-input]')) { setQty(el.dataset.list, el.dataset.id, el.value); return; }
       if (el.matches('[data-item-field]')) {
         const {list,id,itemField} = {list:el.dataset.list,id:el.dataset.id,itemField:el.dataset.itemField};
         collectionChange(list,id,itemField,el.value,el); return;
@@ -846,7 +925,7 @@
       if (!item || item.hidden.fill) return;
       const raw = input.value.trim();
       if (fieldIsHidden(raw)) {
-        item.fill = raw; item.hidden.fill = true; renderCollections(); persist(); return;
+        item.fill = raw; item.hidden.fill = true; editingField = null; renderCollections(); persist(); return;
       }
       if (!raw.includes('/')) input.value = `${raw || '0'}/${(item.fill.split('/')[1] || '10')}`;
       else {
@@ -855,12 +934,19 @@
       }
       item.fill = input.value.replace(/\s/g,''); persist();
     }
+    function normalizeFieldOnBlur(input) {
+      const type = input.dataset.list, id = input.dataset.id, field = input.dataset.itemField, item = findItem(type,id);
+      if (!item || !field) return;
+      if (field === 'fill') { normalizeFillOnBlur(input); return; }
+      const raw = input.value.trim();
+      if (fieldIsHidden(raw) && input.dataset.hideable === '1') {
+        item[field] = raw; item.hidden[field] = true; editingField = null; renderCollections(); persist();
+      }
+    }
     function inputChanged(e) {
       const el=e.target;
       if (el.matches('[data-item-field]') && el.dataset.itemField==='fill') {
         const raw=el.value.trim();
-        if (fieldIsHidden(raw)) { collectionChange(el.dataset.list,el.dataset.id,'fill',raw,el); return; }
-        // Слэш — разделитель двух редактируемых частей и не должен исчезать при обычном редактировании.
         if (!raw.includes('/') && raw.length > 0 && /^\d+$/.test(raw)) {
           const item=findItem(el.dataset.list,el.dataset.id);
           const denominator=item && item.fill.includes('/') ? item.fill.split('/')[1] : '10';
@@ -874,15 +960,36 @@
       if (el.matches('[data-item-field]')) collectionChange(el.dataset.list,el.dataset.id,el.dataset.itemField,el.value,el);
     }
 
-    // Profile fields and expandable text areas save as the player edits.
     document.addEventListener('input', inputChanged);
     document.addEventListener('change', onFieldChange);
     document.addEventListener('focusout', e => {
-      if (e.target.matches('[data-item-field="fill"]')) normalizeFillOnBlur(e.target);
+      if (e.target.matches('[data-item-field]')) normalizeFieldOnBlur(e.target);
       if (e.target.matches('textarea[data-autosize]')) resizeTextarea(e.target);
     });
     document.addEventListener('keydown', e => {
       const el=e.target;
+      if (el.matches('[data-field-view]')) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          startFieldEdit(el.dataset.list, el.dataset.id, el.dataset.fieldKey);
+        }
+        return;
+      }
+      if (el.matches('[data-desc-view]')) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          startFieldEdit(el.dataset.list, el.dataset.id, 'description');
+        }
+        return;
+      }
+      if (el.matches('[data-item-field]') || el.matches('[data-item-description]')) {
+        if (e.key === 'Escape') {
+          e.preventDefault(); el.blur(); return;
+        }
+        if (e.key === 'Enter' && el.tagName !== 'TEXTAREA') {
+          e.preventDefault(); el.blur(); return;
+        }
+      }
       if (!el.matches('[data-item-field="fill"]')) return;
       if (e.key === '/' && !el.value.includes('/') ) { e.preventDefault(); return; }
       if (e.key !== 'Backspace' && e.key !== 'Delete') return;
@@ -902,8 +1009,14 @@
       if (add) { addItem(add.dataset.addItem); return; }
       const desc = e.target.closest('[data-toggle-description]');
       if (desc) { toggleDescription(desc.dataset.list,desc.dataset.id); return; }
+      const fv = e.target.closest('[data-field-view]');
+      if (fv) { startFieldEdit(fv.dataset.list,fv.dataset.id,fv.dataset.fieldKey); return; }
+      const dv = e.target.closest('[data-desc-view]');
+      if (dv) { startFieldEdit(dv.dataset.list,dv.dataset.id,'description'); return; }
       const restore = e.target.closest('[data-restore-field]');
       if (restore) { restoreField(restore.dataset.list,restore.dataset.id,restore.dataset.restoreField); return; }
+      const qty = e.target.closest('[data-qty-delta]');
+      if (qty) { changeQty(qty.dataset.list,qty.dataset.id,Number(qty.dataset.qtyDelta)); return; }
       const del = e.target.closest('[data-delete-item]');
       if (del) { deleteItem(del.dataset.list,del.dataset.id); return; }
     });
@@ -919,7 +1032,7 @@
     $('#levelUp').addEventListener('click', levelUp);
     $('#saveButton').addEventListener('click', () => { if (persist(false)) setToast('Лист персонажа сохранён на этом устройстве.'); });
     $('#resetButton').addEventListener('click', () => openModal('Сбросить все данные?', '<p>Будут удалены досье, аватар, характеристики, ОС, записи, навыки, умения и предметы из этого браузера.</p><p><strong>Это действие нельзя отменить.</strong></p>', [
-      {label:'Сбросить все',className:'danger',action:() => { state=defaultState(); localStorage.removeItem(SAVE_KEY); closeModal(); renderAll(); persist(); setToast('Лист сброшен.'); }},
+      {label:'Сбросить все',className:'danger',action:() => { state=defaultState(); editingField=null; localStorage.removeItem(SAVE_KEY); closeModal(); renderAll(); persist(); setToast('Лист сброшен.'); }},
       {label:'Отмена',action:closeModal}
     ]));
     $('#modalBackdrop').addEventListener('click', e => { if (e.target === $('#modalBackdrop')) closeModal(); });
@@ -930,13 +1043,28 @@
     $('#avatarInput').addEventListener('change', e => {
       const file=e.target.files && e.target.files[0];
       if (!file) return;
-      if (file.type !== 'image/png') { setToast('Выбери PNG-изображение.',true); e.target.value=''; return; }
+      const allowed = ['image/png','image/jpeg','image/webp','image/gif','image/svg+xml'];
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const extAllowed = ['png','jpg','jpeg','webp','gif','svg'].includes(ext);
+      if (!allowed.includes(file.type) && !extAllowed) {
+        setToast('Выбери изображение: PNG, JPEG, WebP, GIF или SVG.', true);
+        e.target.value='';
+        return;
+      }
       const reader=new FileReader();
       reader.onload=() => {
+        const isVector = file.type === 'image/svg+xml' || ext === 'svg';
+        if (isVector) {
+          state.avatar = reader.result;
+          renderAvatar();
+          if (persist(false)) setToast('Аватар обновлён.');
+          e.target.value='';
+          return;
+        }
         const img=new Image();
         img.onload=() => {
           try {
-            const side=700, scale=Math.min(1,side/Math.max(img.naturalWidth,img.naturalHeight));
+            const side=1400, scale=Math.min(1,side/Math.max(img.naturalWidth,img.naturalHeight));
             const canvas=document.createElement('canvas'); canvas.width=Math.max(1,Math.round(img.naturalWidth*scale)); canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
             const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
             state.avatar=canvas.toDataURL('image/png'); renderAvatar();
@@ -951,7 +1079,6 @@
       reader.readAsDataURL(file);
     });
 
-    // The static HTML remains usable without service-worker support; GitHub Pages enables install/offline support.
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Service worker registration failed',err)));
     }
